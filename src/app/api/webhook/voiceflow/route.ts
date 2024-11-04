@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { PrismaClient } from '@prisma/client'
+import { Prisma } from '@prisma/client';
+
 
 type WebhookBody = {
   voiceflowProjectId: string;
@@ -17,10 +19,18 @@ type VoiceflowTranscript = {
   createdAt: string;
 }
 
+type VoiceflowPayload = {
+  message?: string;
+  text?: string;
+  data?: Record<string, unknown>;
+  choices?: Array<{ name: string; actions: Array<Record<string, unknown>> }>;
+  success?: boolean;
+}
+
 type VoiceflowTurn = {
   turnID: string;
   type: string;
-  payload: any;
+  payload: VoiceflowPayload;
   startTime: string;
   format: string;
 }
@@ -249,16 +259,16 @@ async function saveTranscriptsToDatabase(
             const turnData = turns.map(turn => ({
               transcriptId: savedTranscript.id,
               type: turn.type,
-              payload: turn.payload,
+              payload: turn.payload as Prisma.InputJsonValue,
               startTime: new Date(turn.startTime),
               format: turn.format,
               voiceflowTurnId: turn.turnID,
-            }))
-
+            }));
+            
             await tx.turn.createMany({
               data: turnData,
               skipDuplicates: true,
-            })
+            });
           }
 
           console.log(

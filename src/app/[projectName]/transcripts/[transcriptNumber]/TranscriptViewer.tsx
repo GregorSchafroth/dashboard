@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 
 // Types
-type ContentChild = {
+type SlateChild = {
   type?: 'link'
   url?: string
   children?: Array<{ text: string }>
@@ -14,14 +14,36 @@ type ContentChild = {
   fontWeight?: string
 }
 
-type ContentBlock = {
-  children: ContentChild[]
+type SlateBlock = {
+  children: SlateChild[]
 }
 
-type TranscriptItem = {
-  type: string
-  payload: any // Using any here since we're storing Json in the database
+type SlateContent = {
+  content: SlateBlock[]
 }
+
+type TextPayload = {
+  type: 'text'
+  payload: {
+    payload: {
+      slate: SlateContent
+    }
+  }
+}
+
+type RequestPayload = {
+  type: 'request'
+  payload: {
+    type?: 'launch'
+    payload: {
+      query?: string
+      label?: string
+    }
+  }
+}
+
+type TranscriptItem = TextPayload | RequestPayload
+
 
 type TranscriptProps = {
   projectName: string
@@ -35,6 +57,8 @@ function formatProjectName(urlProjectName: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
+
+
 
 // Server-side data fetching function
 async function getTranscriptData(projectName: string, transcriptNumber: number) {
@@ -103,9 +127,9 @@ const extractContent = (item: TranscriptItem): string => {
     item.payload.payload.slate?.content
   ) {
     return item.payload.payload.slate.content
-      .map((block: ContentBlock) =>
+      .map((block: SlateBlock) =>
         block.children
-          .map((child: ContentChild) => {
+          .map((child: SlateChild) => {
             if (child.type === 'link' && child.children?.[0]) {
               return `<a href="${child.url}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: underline;">${child.children[0].text}</a>`
             }
@@ -149,7 +173,7 @@ const TranscriptViewer = async ({
     const turns = transcript.turns.map(turn => ({
       type: turn.type,
       payload: turn.payload
-    }))
+    } as TranscriptItem))
 
     return (
       <div className="h-full flex flex-col">
