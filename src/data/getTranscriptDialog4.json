@@ -1,0 +1,831 @@
+[
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "request",
+    "payload": {
+      "type": "launch"
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "flow",
+    "payload": {
+      "time": 1724011508145,
+      "type": "flow",
+      "payload": {
+        "diagramID": "64386e21bb106b044ea34b78"
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "block",
+    "payload": {
+      "time": 1724011508149,
+      "type": "block",
+      "payload": {
+        "blockID": "start00000000000000000000"
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "debug",
+    "payload": {
+      "time": 1724011508149,
+      "type": "debug",
+      "payload": {
+        "type": "start",
+        "message": "beginning flow"
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "block",
+    "payload": {
+      "time": 1724011508149,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf828"
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "text",
+    "payload": {
+      "time": 1724011508150,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "bq2vkf0opw",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Welcome to Hallo Deutschschule. How can we help you?"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Welcome to Hallo Deutschschule. How can we help you?",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "block",
+    "payload": {
+      "time": 1724011508150,
+      "type": "block",
+      "payload": {
+        "blockID": "6672d119c914360e7e2584c7"
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c253f4dc81ea361ece073c",
+    "type": "choice",
+    "payload": {
+      "time": 1724011508150,
+      "type": "choice",
+      "payload": {
+        "buttons": [
+          {
+            "name": "🇩🇪 German course registration",
+            "request": {
+              "type": "path-w5wg3avz",
+              "payload": {
+                "label": "🇩🇪 German course registration",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "📋 Placement test",
+            "request": {
+              "type": "path-pb1933av8",
+              "payload": {
+                "label": "📋 Placement test",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "🌐 Change assistant language (🇺🇸🇩🇪🇫🇷🇮🇹🇧🇷🇪🇸🇨🇳)",
+            "request": {
+              "type": "path-0q18u3obu",
+              "payload": {
+                "label": "🌐 Change assistant language (🇺🇸🇩🇪🇫🇷🇮🇹🇧🇷🇪🇸🇨🇳)",
+                "actions": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-18T20:05:08.150Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "request",
+    "payload": {
+      "type": "intent",
+      "payload": {
+        "query": "iiiiiiiiiiii",
+        "intent": {
+          "name": "None"
+        },
+        "entities": [],
+        "confidence": 1
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "debug",
+    "payload": {
+      "time": 1724011556764,
+      "type": "debug",
+      "payload": {
+        "type": "intent",
+        "message": "matched intent **None** - confidence interval _100.00%_"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "block",
+    "payload": {
+      "time": 1724011556770,
+      "type": "block",
+      "payload": {
+        "blockID": "6672d119c914360e7e2584c7"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "path",
+    "payload": {
+      "time": 1724011556770,
+      "type": "path",
+      "payload": {
+        "path": "choice:else"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "block",
+    "payload": {
+      "time": 1724011556770,
+      "type": "block",
+      "payload": {
+        "blockID": "669e3eb9cf35370ad1ef4c49"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "path",
+    "payload": {
+      "time": 1724011556770,
+      "type": "path",
+      "payload": {
+        "path": "jump"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "flow",
+    "payload": {
+      "time": 1724011556771,
+      "type": "flow",
+      "payload": {
+        "diagramID": "669e3cd59692a02139438af0"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "debug",
+    "payload": {
+      "time": 1724011556771,
+      "type": "debug",
+      "payload": {
+        "type": "goToNode",
+        "message": "entering flow `669e3cd59692a02139438af0`"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "block",
+    "payload": {
+      "time": 1724011556773,
+      "type": "block",
+      "payload": {
+        "blockID": "669e3ea2cf35370ad1ef4908"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "debug",
+    "payload": {
+      "time": 1724011557792,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response KB__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 1225, query: 1220, answer: 5}`\n    <br /> Post-Multiplier Token Consumption: `{total: 245, query: 244, answer: 1}`"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "block",
+    "payload": {
+      "time": 1724011557793,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4105cf35370ad1ef5551"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "text",
+    "payload": {
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "962w7y087k",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Hey there! 😊 How's it going? If you have any questions about learning German or our courses at Hallo Deutschschule, feel free to ask! I'm here to help!"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Hey there! 😊 How's it going? If you have any questions about learning German or our courses at Hallo Deutschschule, feel free to ask! I'm here to help!",
+        "delay": 1000,
+        "ai": true
+      },
+      "time": 1724011558602
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "debug",
+    "payload": {
+      "time": 1724011558601,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 180, query: 5, answer: 175}`\n    <br /> Post-Multiplier Token Consumption: `{total: 36, query: 1, answer: 35}`"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25426dc81ea361ece07ae",
+    "type": "block",
+    "payload": {
+      "time": 1724011558601,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:05:58.602Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "request",
+    "payload": {
+      "type": "intent",
+      "payload": {
+        "query": "Sir you have paid promotion ",
+        "intent": {
+          "name": "None"
+        },
+        "entities": [],
+        "confidence": 1
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "debug",
+    "payload": {
+      "time": 1724011585165,
+      "type": "debug",
+      "payload": {
+        "type": "intent",
+        "message": "matched intent **None** - confidence interval _100.00%_"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "block",
+    "payload": {
+      "time": 1724011585167,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "path",
+    "payload": {
+      "time": 1724011585167,
+      "type": "path",
+      "payload": {
+        "path": "capture"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "block",
+    "payload": {
+      "time": 1724011585167,
+      "type": "block",
+      "payload": {
+        "blockID": "669e3ea2cf35370ad1ef4908"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "debug",
+    "payload": {
+      "time": 1724011586662,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response KB__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 1340, query: 1335, answer: 5}`\n    <br /> Post-Multiplier Token Consumption: `{total: 268, query: 267, answer: 1}`"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "block",
+    "payload": {
+      "time": 1724011586662,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4105cf35370ad1ef5551"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "text",
+    "payload": {
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "mw2w8m081i",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Hey there! Just to clarify, I’m here to provide helpful information about Hallo Deutschschule and answer any questions you might have about learning German with us. If you have any specific questions or need details about our courses, feel free to ask! I'm here to help you out. 😊"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Hey there! Just to clarify, I’m here to provide helpful information about Hallo Deutschschule and answer any questions you might have about learning German with us. If you have any specific questions or need details about our courses, feel free to ask! I'm here to help you out. 😊",
+        "delay": 1000,
+        "ai": true
+      },
+      "time": 1724011587608
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "debug",
+    "payload": {
+      "time": 1724011587608,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 290, query: 5, answer: 285}`\n    <br /> Post-Multiplier Token Consumption: `{total: 58, query: 1, answer: 57}`"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c25443dc81ea361ece07da",
+    "type": "block",
+    "payload": {
+      "time": 1724011587608,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:06:27.609Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "request",
+    "payload": {
+      "type": "intent",
+      "payload": {
+        "query": "Admin is here",
+        "intent": {
+          "name": "None"
+        },
+        "entities": [],
+        "confidence": 1
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "debug",
+    "payload": {
+      "time": 1724011620305,
+      "type": "debug",
+      "payload": {
+        "type": "intent",
+        "message": "matched intent **None** - confidence interval _100.00%_"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "block",
+    "payload": {
+      "time": 1724011620307,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "path",
+    "payload": {
+      "time": 1724011620307,
+      "type": "path",
+      "payload": {
+        "path": "capture"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "block",
+    "payload": {
+      "time": 1724011620307,
+      "type": "block",
+      "payload": {
+        "blockID": "669e3ea2cf35370ad1ef4908"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "debug",
+    "payload": {
+      "time": 1724011621265,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response KB__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 1150, query: 1145, answer: 5}`\n    <br /> Post-Multiplier Token Consumption: `{total: 230, query: 229, answer: 1}`"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "block",
+    "payload": {
+      "time": 1724011621265,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4105cf35370ad1ef5551"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "text",
+    "payload": {
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "ck2w9d08cq",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Hey there! Welcome! How can I help you today? If you have any questions about our German courses, culture, or anything else, feel free to ask. I'm here to help! 😊"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Hey there! Welcome! How can I help you today? If you have any questions about our German courses, culture, or anything else, feel free to ask. I'm here to help! 😊",
+        "delay": 1000,
+        "ai": true
+      },
+      "time": 1724011622228
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "debug",
+    "payload": {
+      "time": 1724011622227,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 200, query: 5, answer: 195}`\n    <br /> Post-Multiplier Token Consumption: `{total: 40, query: 1, answer: 39}`"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c2546638205861eb773ec2",
+    "type": "block",
+    "payload": {
+      "time": 1724011622227,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:07:02.228Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "request",
+    "payload": {
+      "type": "intent",
+      "payload": {
+        "query": "I want to talk to admin",
+        "intent": {
+          "name": "None"
+        },
+        "entities": [],
+        "confidence": 1
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "debug",
+    "payload": {
+      "time": 1724011699657,
+      "type": "debug",
+      "payload": {
+        "type": "intent",
+        "message": "matched intent **None** - confidence interval _100.00%_"
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "block",
+    "payload": {
+      "time": 1724011699659,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "path",
+    "payload": {
+      "time": 1724011699659,
+      "type": "path",
+      "payload": {
+        "path": "capture"
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "block",
+    "payload": {
+      "time": 1724011699659,
+      "type": "block",
+      "payload": {
+        "blockID": "669e3ea2cf35370ad1ef4908"
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "debug",
+    "payload": {
+      "time": 1724011701475,
+      "type": "debug",
+      "payload": {
+        "message": "__AI Response KB__\n    <br /> Model: `gpt-4o-mini`\n    <br /> Token Multiplier: `0.2x`\n    <br /> Token Consumption: `{total: 1240, query: 1210, answer: 30}`\n    <br /> Post-Multiplier Token Consumption: `{total: 248, query: 242, answer: 6}`"
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "knowledgeBase",
+    "payload": {
+      "time": 1724011701477,
+      "type": "knowledgeBase",
+      "payload": {
+        "chunks": [
+          {
+            "score": 0.7858887,
+            "documentID": "66616c43f0aa817fbbc98b16",
+            "documentData": {
+              "type": "url",
+              "name": "hallodeutschschule.ch/en/freizeit-kultur/",
+              "url": "https://hallodeutschschule.ch/en/freizeit-kultur/",
+              "refreshRate": "weekly",
+              "lastSuccessUpdate": "2024-06-20T09:02:13.248588"
+            }
+          },
+          {
+            "score": 0.77215576,
+            "documentID": "66616c43f0aa817fbbc98b15",
+            "documentData": {
+              "type": "url",
+              "name": "hallodeutschschule.ch/en/schule/",
+              "url": "https://hallodeutschschule.ch/en/schule/",
+              "refreshRate": "weekly",
+              "lastSuccessUpdate": "2024-06-20T09:02:08.912990"
+            }
+          },
+          {
+            "score": 0.7702637,
+            "documentID": "66616c43f0aa817fbbc98b13",
+            "documentData": {
+              "type": "url",
+              "name": "hallodeutschschule.ch/en/agb/",
+              "url": "https://hallodeutschschule.ch/en/agb/",
+              "refreshRate": "weekly",
+              "lastSuccessUpdate": "2024-06-20T09:02:10.867687"
+            }
+          }
+        ],
+        "query": {
+          "messages": [
+            {
+              "role": "user",
+              "content": "##Reference Information:\nNo problem. Just post your project on our pin board inside the school so other students with the same interests can easily contact you. Hallo Deutschschule Fabrikstrasse 10, 8005  Zürich 044 211 66 55 Facebook-f Instagram Youtube Linkedin-in Tiktok T&C | ImpressumIn role plays and improvisations, students practise how to react fast and speak in realistic situations (guided by the theater director Michela Goesken). Feel free to use your fantasy and imagination. Fun factor: 10! Are you looking for people to jam, hike, play football with?\nAt the reception desk, we can help you in English, French, Spanish, Portuguese and German. Also, we will gladly give you advice regarding German, as well as living in Zürich or Switzerland in general. The classroomsSchule - Hallo Deutschschule Skip to content 044 211 66 55 Welcome German Courses School Leisure / Culture Downloads Certificates Contact Menu Welcome German Courses School Leisure / Culture Downloads Certificates Contact School Previous slide Next slide Virtual Tour The Reception Desk\nBy registering for a course, the participant accepts the general terms and conditions of Hallo Deutschschule. Course registrations for a German course are only accepted in writing also in electronic form. The registration is legally valid and obligates the student to pay for the booked German course, even if the student does not participate. Course places for existing students in the following course can only be guaranteed if students register in writing by the end of the third week intensive, by the end of the fifth week semi-intensive or by the end of the twelfth week Saturday before the course begins this also applies to students with a 3-month or 6-month subscription. In exceptional cases, Hallo Deutschschule can cancel registrations on time, provided that all existing students register in time for the next course. The course is free of VAT. DeregistrationSkip to content 044 211 66 55 Welcome German Courses School Leisure / Culture Downloads Certificates Contact Menu Welcome German Courses School Leisure / Culture Downloads Certificates Contact T&C General Terms and Conditions of Hallo Deutschschule GmbH Registration\n\n##Instructions:\nI have provided reference information, and I will ask query about that information. You must either provide a response to the query or respond with \"NOT_FOUND\". Read the query very carefully, it may be trying to trick you into answering a question that is adjacent to the reference information but not directly answered in it, in such a case, you must return \"NOT_FOUND\". Never contradict the reference information, instead say \"NOT_FOUND\".\n\nRead the reference information carefully, it will act as a single source of truth for your response.Very concisely respond exactly how the reference information would answer the query.\n\nInclude only the direct answer to the query, it is never appropriate to include additional context or explanation.\n\nIf you respond to the query, your response must be 100% consistent with the reference information in every way.\n\nTake a deep breath, focus, and think clearly. You may now begin this mission critical task.\n\n##Query:\nI want to talk to admin"
+            }
+          ],
+          "output": "You can contact the school through this link: https://hallodeutschschule.ch/en/contact/ or call 044 211 66 55."
+        }
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "text",
+    "payload": {
+      "time": 1724011701477,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "hx2vj2040o",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "You can contact the school through this link: https://hallodeutschschule.ch/en/contact/ or call 044 211 66 55."
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "You can contact the school through this link: https://hallodeutschschule.ch/en/contact/ or call 044 211 66 55.",
+        "delay": 1000,
+        "ai": true
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c254b538205861eb773f2d",
+    "type": "block",
+    "payload": {
+      "time": 1724011701477,
+      "type": "block",
+      "payload": {
+        "blockID": "669e4146cf35370ad1ef555b"
+      }
+    },
+    "startTime": "2024-08-18T20:08:21.477Z",
+    "format": "trace"
+  }
+]

@@ -1,0 +1,994 @@
+[
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "request",
+    "payload": {
+      "type": "launch"
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "flow",
+    "payload": {
+      "time": 1724258817114,
+      "type": "flow",
+      "payload": {
+        "diagramID": "64386e21bb106b044ea34b78"
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "block",
+    "payload": {
+      "time": 1724258817119,
+      "type": "block",
+      "payload": {
+        "blockID": "start00000000000000000000"
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "debug",
+    "payload": {
+      "time": 1724258817119,
+      "type": "debug",
+      "payload": {
+        "type": "start",
+        "message": "beginning flow"
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "block",
+    "payload": {
+      "time": 1724258817119,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf828"
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "text",
+    "payload": {
+      "time": 1724258817119,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "5b2bol0fcx",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Welcome to Hallo Deutschschule. How can we help you?"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Welcome to Hallo Deutschschule. How can we help you?",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "block",
+    "payload": {
+      "time": 1724258817119,
+      "type": "block",
+      "payload": {
+        "blockID": "6672d119c914360e7e2584c7"
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a01dc81ea361ed6f347",
+    "type": "choice",
+    "payload": {
+      "time": 1724258817119,
+      "type": "choice",
+      "payload": {
+        "buttons": [
+          {
+            "name": "🇩🇪 German course registration",
+            "request": {
+              "type": "path-w5wg3avz",
+              "payload": {
+                "label": "🇩🇪 German course registration",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "📋 Placement test",
+            "request": {
+              "type": "path-pb1933av8",
+              "payload": {
+                "label": "📋 Placement test",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "🌐 Change assistant language (🇺🇸🇩🇪🇫🇷🇮🇹🇧🇷🇪🇸🇨🇳)",
+            "request": {
+              "type": "path-0q18u3obu",
+              "payload": {
+                "label": "🌐 Change assistant language (🇺🇸🇩🇪🇫🇷🇮🇹🇧🇷🇪🇸🇨🇳)",
+                "actions": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-21T16:46:57.119Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "request",
+    "payload": {
+      "type": "path-w5wg3avz",
+      "payload": {
+        "label": "🇩🇪 German course registration",
+        "actions": []
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "block",
+    "payload": {
+      "time": 1724258823275,
+      "type": "block",
+      "payload": {
+        "blockID": "6672d119c914360e7e2584c7"
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "path",
+    "payload": {
+      "time": 1724258823275,
+      "type": "path",
+      "payload": {
+        "path": "choice:1"
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "block",
+    "payload": {
+      "time": 1724258823275,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf7be"
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "text",
+    "payload": {
+      "time": 1724258823276,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "wc8vw0475",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Which course are you interested in?"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Which course are you interested in?",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "block",
+    "payload": {
+      "time": 1724258823276,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf7c1"
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a07dc81ea361ed6f36d",
+    "type": "choice",
+    "payload": {
+      "time": 1724258823276,
+      "type": "choice",
+      "payload": {
+        "buttons": [
+          {
+            "name": "Intensive",
+            "request": {
+              "type": "path-me1oo3aer",
+              "payload": {
+                "label": "Intensive",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "Semi-intensive",
+            "request": {
+              "type": "path-i71pa3ah0",
+              "payload": {
+                "label": "Semi-intensive",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "Saturday",
+            "request": {
+              "type": "path-dg1po3at3",
+              "payload": {
+                "label": "Saturday",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "Private course",
+            "request": {
+              "type": "path-4s1q33a7e",
+              "payload": {
+                "label": "Private course",
+                "actions": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-21T16:47:03.276Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "request",
+    "payload": {
+      "type": "path-me1oo3aer",
+      "payload": {
+        "label": "Intensive",
+        "actions": []
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "block",
+    "payload": {
+      "time": 1724258827188,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf7c1"
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "path",
+    "payload": {
+      "time": 1724258827188,
+      "type": "path",
+      "payload": {
+        "path": "choice:1"
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "block",
+    "payload": {
+      "time": 1724258827188,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf820"
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "text",
+    "payload": {
+      "time": 1724258827188,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "x08w104ru",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Do you know your German level?"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Do you know your German level?",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "block",
+    "payload": {
+      "time": 1724258827188,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf823"
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a0bdc81ea361ed6f385",
+    "type": "choice",
+    "payload": {
+      "time": 1724258827190,
+      "type": "choice",
+      "payload": {
+        "buttons": [
+          {
+            "name": "Yes",
+            "request": {
+              "type": "path-6z1eo3a82",
+              "payload": {
+                "label": "Yes",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "No",
+            "request": {
+              "type": "path-c91f53a3d",
+              "payload": {
+                "label": "No",
+                "actions": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-21T16:47:07.190Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "request",
+    "payload": {
+      "type": "path-6z1eo3a82",
+      "payload": {
+        "label": "Yes",
+        "actions": []
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "block",
+    "payload": {
+      "time": 1724258832363,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf823"
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "path",
+    "payload": {
+      "time": 1724258832363,
+      "type": "path",
+      "payload": {
+        "path": "choice:1"
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "block",
+    "payload": {
+      "time": 1724258832363,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf7d0"
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "text",
+    "payload": {
+      "time": 1724258832363,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "wr2bp60fg3",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "What level are you interested in?"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "What level are you interested in?",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "block",
+    "payload": {
+      "time": 1724258832363,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf7d3"
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a10dc81ea361ed6f3ac",
+    "type": "choice",
+    "payload": {
+      "time": 1724258832363,
+      "type": "choice",
+      "payload": {
+        "buttons": [
+          {
+            "name": "A1.1",
+            "request": {
+              "type": "path-ee47k3ahv",
+              "payload": {
+                "label": "A1.1",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-a1-1/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "A1.2",
+            "request": {
+              "type": "path-iq48r3abp",
+              "payload": {
+                "label": "A1.2",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-a1-2/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "A1.3",
+            "request": {
+              "type": "path-if49v3a4p",
+              "payload": {
+                "label": "A1.3",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-a1-3/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "A2.1",
+            "request": {
+              "type": "path-9e4ax3a8g",
+              "payload": {
+                "label": "A2.1",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-a2-1/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "A2.2",
+            "request": {
+              "type": "path-pn4c33aw7",
+              "payload": {
+                "label": "A2.2",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-a2-2/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "A2.3",
+            "request": {
+              "type": "path-ne4dd3a1e",
+              "payload": {
+                "label": "A2.3",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-a2-3/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "B1.1",
+            "request": {
+              "type": "path-ts4er3ah4",
+              "payload": {
+                "label": "B1.1",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-b1-1/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "B1.2",
+            "request": {
+              "type": "path-424g83agf",
+              "payload": {
+                "label": "B1.2",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-b1-2/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "B1.3",
+            "request": {
+              "type": "path-0u4i23aon",
+              "payload": {
+                "label": "B1.3",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-b1-3/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "B2.1",
+            "request": {
+              "type": "path-o04jr3ak7",
+              "payload": {
+                "label": "B2.1",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-b2-1/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "B2.2",
+            "request": {
+              "type": "path-x74ln3alt",
+              "payload": {
+                "label": "B2.2",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-b2-2/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "B2.3",
+            "request": {
+              "type": "path-x74nk3a4u",
+              "payload": {
+                "label": "B2.3",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-b2-3/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "C1.1",
+            "request": {
+              "type": "path-514pn3ac9",
+              "payload": {
+                "label": "C1.1",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-c1-1/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "C1.2",
+            "request": {
+              "type": "path-mn4pz3a21",
+              "payload": {
+                "label": "C1.2",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-c1-2/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "C1.3",
+            "request": {
+              "type": "path-dg4vw3ams",
+              "payload": {
+                "label": "C1.3",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-c1-3/"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "C2",
+            "request": {
+              "type": "path-4v4y93a6q",
+              "payload": {
+                "label": "C2",
+                "actions": [
+                  {
+                    "type": "open_url",
+                    "payload": {
+                      "url": "https://hallodeutschschule.ch/en/deutschkurs-c2-intensiv/"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-21T16:47:12.363Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "request",
+    "payload": {
+      "type": "path-ee47k3ahv",
+      "payload": {
+        "label": "A1.1",
+        "actions": [
+          {
+            "type": "open_url",
+            "payload": {
+              "url": "https://hallodeutschschule.ch/en/deutschkurs-a1-1/"
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "request"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "block",
+    "payload": {
+      "time": 1724258835911,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf7d3"
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "path",
+    "payload": {
+      "time": 1724258835911,
+      "type": "path",
+      "payload": {
+        "path": "choice:1"
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "block",
+    "payload": {
+      "time": 1724258835911,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf797"
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "text",
+    "payload": {
+      "time": 1724258835911,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "nb2bpb0fk0",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "We would be very happy to welcome you soon."
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "We would be very happy to welcome you soon.",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "block",
+    "payload": {
+      "time": 1724258835911,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf794"
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "text",
+    "payload": {
+      "time": 1724258835911,
+      "type": "text",
+      "payload": {
+        "slate": {
+          "id": "nb2bpc0fyb",
+          "content": [
+            {
+              "children": [
+                {
+                  "text": "Do you have any other questions?"
+                }
+              ]
+            }
+          ],
+          "messageDelayMilliseconds": 1000
+        },
+        "message": "Do you have any other questions?",
+        "delay": 1000
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "block",
+    "payload": {
+      "time": 1724258835911,
+      "type": "block",
+      "payload": {
+        "blockID": "663cd4f78846b7af89ecf87b"
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "block",
+    "payload": {
+      "time": 1724258835911,
+      "type": "block",
+      "payload": {
+        "blockID": "6672d119c914360e7e2584c7"
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  },
+  {
+    "turnID": "66c61a13dc81ea361ed6f3c0",
+    "type": "choice",
+    "payload": {
+      "time": 1724258835911,
+      "type": "choice",
+      "payload": {
+        "buttons": [
+          {
+            "name": "🇩🇪 German course registration",
+            "request": {
+              "type": "path-w5wg3avz",
+              "payload": {
+                "label": "🇩🇪 German course registration",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "📋 Placement test",
+            "request": {
+              "type": "path-pb1933av8",
+              "payload": {
+                "label": "📋 Placement test",
+                "actions": []
+              }
+            }
+          },
+          {
+            "name": "🌐 Change assistant language (🇺🇸🇩🇪🇫🇷🇮🇹🇧🇷🇪🇸🇨🇳)",
+            "request": {
+              "type": "path-0q18u3obu",
+              "payload": {
+                "label": "🌐 Change assistant language (🇺🇸🇩🇪🇫🇷🇮🇹🇧🇷🇪🇸🇨🇳)",
+                "actions": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "startTime": "2024-08-21T16:47:15.911Z",
+    "format": "trace"
+  }
+]
