@@ -1,53 +1,61 @@
 // app/api/webhook/voiceflow/route.ts
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { PrismaClient } from '@prisma/client'
-import { Prisma } from '@prisma/client';
-
+import { Prisma } from '@prisma/client'
+import prisma from '@/lib/prisma'
 
 type WebhookBody = {
-  voiceflowProjectId: string;
+  voiceflowProjectId: string
 }
 
 type VoiceflowTranscript = {
-  _id: string;
-  name?: string;
-  image?: string;
-  creatorID?: string;
-  unread?: boolean;
-  reportTags?: string[];
-  createdAt: string;
+  _id: string
+  name?: string
+  image?: string
+  creatorID?: string
+  unread?: boolean
+  reportTags?: string[]
+  createdAt: string
 }
 
 type VoiceflowPayload = {
-  message?: string;
-  text?: string;
-  data?: Record<string, unknown>;
-  choices?: Array<{ name: string; actions: Array<Record<string, unknown>> }>;
-  success?: boolean;
+  message?: string
+  text?: string
+  data?: Record<string, unknown>
+  choices?: Array<{ name: string; actions: Array<Record<string, unknown>> }>
+  success?: boolean
 }
 
 type VoiceflowTurn = {
-  turnID: string;
-  type: string;
-  payload: VoiceflowPayload;
-  startTime: string;
-  format: string;
+  turnID: string
+  type: string
+  payload: VoiceflowPayload
+  startTime: string
+  format: string
 }
-
-const prisma = new PrismaClient()
 
 async function processWebhookAsync(body: WebhookBody) {
   try {
     const voiceflowProjectId = body.voiceflowProjectId
     console.log('Starting async processing for Project ID:', voiceflowProjectId)
 
-    const transcripts = await getTranscripts(voiceflowProjectId)
-    await saveTranscriptsToDatabase(voiceflowProjectId, transcripts)
+    const startTime = Date.now()
 
-    console.log('Async processing completed successfully')
+    const transcripts = await getTranscripts(voiceflowProjectId)
+    console.log(
+      `Fetched ${transcripts.length} transcripts in ${Date.now() - startTime}ms`
+    )
+
+    const processingStartTime = Date.now()
+    await saveTranscriptsToDatabase(voiceflowProjectId, transcripts)
+    console.log(
+      `Processed transcripts in ${Date.now() - processingStartTime}ms`
+    )
+
+    console.log(`Total processing time: ${Date.now() - startTime}ms`)
   } catch (error) {
     console.error('Async processing error:', error)
+    throw error
   }
 }
 
@@ -76,8 +84,9 @@ async function getTranscripts(voiceflowProjectId: string) {
   yesterday.setHours(0, 0, 0, 0) // Set to start of day
 
   // Get today's date
-  const today = new Date()
-  today.setHours(23, 59, 59, 999) // Set to end of day
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(23, 59, 59, 999) // Set to end of day
 
   // Format dates as YYYY-MM-DD
   const formatDate = (date: Date) => {
@@ -85,7 +94,7 @@ async function getTranscripts(voiceflowProjectId: string) {
   }
 
   const startDate = formatDate(yesterday)
-  const endDate = formatDate(today)
+  const endDate = formatDate(tomorrow)
 
   console.log(`Fetching transcripts from ${startDate} to ${endDate}`)
 
@@ -118,7 +127,11 @@ async function getTranscripts(voiceflowProjectId: string) {
   return data
 }
 
-async function getTranscriptContent(transcriptId: string, projectId: string, apiKey: string): Promise<VoiceflowTurn[]> {
+async function getTranscriptContent(
+  transcriptId: string,
+  projectId: string,
+  apiKey: string
+): Promise<VoiceflowTurn[]> {
   const url = `https://api.voiceflow.com/v2/transcripts/${projectId}/${transcriptId}`
   const options: RequestInit = {
     method: 'GET',
@@ -133,12 +146,12 @@ async function getTranscriptContent(transcriptId: string, projectId: string, api
     throw new Error(`Failed to fetch transcript content: ${res.status}`)
   }
   const turns = await res.json()
-  
+
   if (!Array.isArray(turns)) {
     console.error('Unexpected transcript content format:', turns)
     return []
   }
-  
+
   return turns
 }
 
@@ -146,7 +159,10 @@ async function saveTranscriptsToDatabase(
   voiceflowProjectId: string,
   transcripts: VoiceflowTranscript[]
 ) {
-  console.log('Received transcripts data:', JSON.stringify(transcripts, null, 2))
+  console.log(
+    'Received transcripts data:',
+    JSON.stringify(transcripts, null, 2)
+  )
 
   if (!Array.isArray(transcripts)) {
     console.error('Transcripts data is not an array:', transcripts)
@@ -165,7 +181,9 @@ async function saveTranscriptsToDatabase(
   })
 
   if (!project) {
-    throw new Error(`No project found with Voiceflow Project ID: ${voiceflowProjectId}`)
+    throw new Error(
+      `No project found with Voiceflow Project ID: ${voiceflowProjectId}`
+    )
   }
 
   const BATCH_SIZE = 5 // Reduced due to content fetching
@@ -205,9 +223,12 @@ async function saveTranscriptsToDatabase(
                 voiceflowProjectId,
                 project.voiceflowApiKey
               )
-              await new Promise(resolve => setTimeout(resolve, DELAY))
+              await new Promise((resolve) => setTimeout(resolve, DELAY))
             } catch (error) {
-              console.error(`Failed to fetch content for transcript ${transcript._id}:`, error)
+              console.error(
+                `Failed to fetch content for transcript ${transcript._id}:`,
+                error
+              )
             }
           }
 
@@ -237,7 +258,9 @@ async function saveTranscriptsToDatabase(
             update: {
               name: transcript.name ?? null,
               image: transcript.image ?? null,
-              reportTags: Array.isArray(transcript.reportTags) ? transcript.reportTags : [],
+              reportTags: Array.isArray(transcript.reportTags)
+                ? transcript.reportTags
+                : [],
               metadata,
               updatedAt: new Date(),
             },
@@ -247,28 +270,32 @@ async function saveTranscriptsToDatabase(
               voiceflowTranscriptId: transcript._id || '',
               name: transcript.name ?? null,
               image: transcript.image ?? null,
-              reportTags: Array.isArray(transcript.reportTags) ? transcript.reportTags : [],
+              reportTags: Array.isArray(transcript.reportTags)
+                ? transcript.reportTags
+                : [],
               metadata,
-              createdAt: transcript.createdAt ? new Date(transcript.createdAt) : new Date(),
+              createdAt: transcript.createdAt
+                ? new Date(transcript.createdAt)
+                : new Date(),
               updatedAt: new Date(),
             },
           })
 
           // Create turns if we have them
           if (turns.length > 0) {
-            const turnData = turns.map(turn => ({
+            const turnData = turns.map((turn) => ({
               transcriptId: savedTranscript.id,
               type: turn.type,
               payload: turn.payload as Prisma.InputJsonValue,
               startTime: new Date(turn.startTime),
               format: turn.format,
               voiceflowTurnId: turn.turnID,
-            }));
-            
+            }))
+
             await tx.turn.createMany({
               data: turnData,
               skipDuplicates: true,
-            });
+            })
           }
 
           console.log(
@@ -292,7 +319,6 @@ async function saveTranscriptsToDatabase(
 
 export async function POST(req: Request) {
   try {
-    // 1. Validate the incoming webhook
     const headersList = headers()
     console.log('Content-Type:', (await headersList).get('content-type'))
 
@@ -303,33 +329,39 @@ export async function POST(req: Request) {
       console.log('Received webhook payload:', body)
     } catch (parseError) {
       console.error('JSON Parse Error:', parseError)
-      return NextResponse.json(
-        {
-          error: 'Invalid JSON',
-          rawBody: rawBody.substring(0, 100) + '...',
-        },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
-    // 2. Start async processing without awaiting it
-    processWebhookAsync(body).catch((error) => {
-      console.error('Background processing error:', error)
-    })
+    // Process with timeout handling
+    const timeoutPromise = new Promise(
+      (_, reject) =>
+        setTimeout(() => reject(new Error('Processing timeout')), 25000) // 25 second timeout
+    )
 
-    // 3. Return immediate success response
-    return NextResponse.json({
-      success: true,
-      message: 'Webhook received, processing started',
-      webhookReceived: body,
-    })
+    try {
+      await Promise.race([processWebhookAsync(body), timeoutPromise])
+      return NextResponse.json({
+        success: true,
+        message: 'Webhook processed successfully',
+      })
+    } catch (error: unknown) {
+      // Explicitly type error as unknown
+      if (error instanceof Error) {
+        // Type guard to check if error is Error instance
+        if (error.message === 'Processing timeout') {
+          console.log('Processing timeout reached, but webhook received')
+          return NextResponse.json({
+            success: true,
+            message: 'Webhook received, processing in background',
+          })
+        }
+      }
+      throw error
+    }
   } catch (error) {
-    console.error('Webhook receipt error:', error)
+    console.error('Webhook processing error:', error)
     return NextResponse.json(
-      {
-        error: 'Error processing webhook',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Error processing webhook' },
       { status: 500 }
     )
   }
