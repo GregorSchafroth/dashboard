@@ -179,8 +179,8 @@ const TranscriptList = ({ projectName }: Props) => {
     return matchesSearch && matchesDate
   })
 
-  if (loading) return <div>Loading...</div>
-  if (error) return <div>Error: {error}</div>
+  if (loading) return <div className='p-4'>Loading...</div>
+  if (error) return <div className='p-4'>Error: {error}</div>
 
   return (
     <div className='px-4 py-2 w-full space-y-2 truncate'>
