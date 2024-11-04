@@ -1,4 +1,4 @@
-// components/TranscriptList.tsx
+// src/app/[projectName]transcripts/components/TranscriptList.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils'
 import { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import Link from 'next/link'
+import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
 
 type Transcript = {
   id: number
@@ -43,18 +44,30 @@ type Transcript = {
 
 type Props = {
   projectName: string
+  onTranscriptSelect?: (transcriptId: string) => void
+  selectedTranscriptId?: string
 }
 
 const TranscriptList = ({ projectName }: Props) => {
-  const link = (id: number) => {
-    // Convert spaces to dashes and make URL-friendly
+  const router = useRouter()
+  const segment = useSelectedLayoutSegment()
+
+  const link = (transcriptNumber: number) => {
     const urlProjectName = projectName
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '')
-
-    return `/${urlProjectName}/transcripts/${id}`
+    return `/${urlProjectName}/transcripts/${transcriptNumber}`
   }
+
+  const handleTranscriptClick = (
+    e: React.MouseEvent,
+    transcriptNumber: number
+  ) => {
+    e.preventDefault()
+    router.push(link(transcriptNumber))
+  }
+
   const [transcripts, setTranscripts] = useState<Transcript[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -114,13 +127,48 @@ const TranscriptList = ({ projectName }: Props) => {
 
   // Filter data based on search query and date range
   const filteredData = transcripts.filter((transcript) => {
-    const matchesSearch =
-      transcript.voiceflowTranscriptId
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      (transcript.name?.toLowerCase().includes(searchQuery.toLowerCase()) ??
-        false)
+    // Search matching function for text fields
+    const matchesSearchQuery = (value: string | number | null | undefined) => {
+      if (value === null || value === undefined) return false
+      return String(value).toLowerCase().includes(searchQuery.toLowerCase())
+    }
 
+    // Format date for searching
+    const formatDateForSearch = (date: Date) => {
+      return date
+        .toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+        .toLowerCase()
+    }
+
+    // Special handling for transcript number search with # prefix
+    const matchesTranscriptNumber = () => {
+      if (searchQuery.startsWith('#')) {
+        const searchNumber = searchQuery.substring(1) // Remove the # prefix
+        return transcript.transcriptNumber === parseInt(searchNumber)
+      }
+      return matchesSearchQuery(transcript.transcriptNumber)
+    }
+
+    // Check all searchable fields
+    const matchesSearch =
+      // Transcript number search (including # prefix)
+      matchesTranscriptNumber() ||
+      // ID search
+      matchesSearchQuery(transcript.voiceflowTranscriptId) ||
+      // Name search
+      matchesSearchQuery(transcript.name) ||
+      // Date search - allows searching by "june 2024" or "june 15" or "2024"
+      matchesSearchQuery(formatDateForSearch(new Date(transcript.createdAt))) ||
+      // Simple date format search (fallback)
+      matchesSearchQuery(
+        new Date(transcript.createdAt).toISOString().split('T')[0]
+      )
+
+    // Date range filtering
     const transcriptDate = new Date(transcript.createdAt)
     const matchesDate =
       !dateRange?.from ||
@@ -135,16 +183,17 @@ const TranscriptList = ({ projectName }: Props) => {
   if (error) return <div>Error: {error}</div>
 
   return (
-    <div className='w-full space-y-4 truncate'>
-      <div className='flex gap-2 items-center justify-between'>
-        <Input
-          placeholder='Search transcripts...'
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className='max-w-sm'
-        />
-
-        <div className='flex gap-2'>
+    <div className='px-4 py-2 w-full space-y-2 truncate'>
+      <div className='flex gap-2 items-center justify-between relative'>
+        <div className='relative z-[100] flex-1'>
+          <Input
+            placeholder='Search transcripts...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className='w-full'
+          />
+        </div>
+        <div className='flex gap-2 relative z-[100]'>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -254,13 +303,20 @@ const TranscriptList = ({ projectName }: Props) => {
             {filteredData.length > 0 ? (
               filteredData.map((transcript) => (
                 <TableRow
-                  key={transcript.id}
-                  className='cursor-pointer hover:bg-gray-50'
+                  key={transcript.transcriptNumber}
+                  className={`cursor-pointer hover:bg-gray-50 ${
+                    segment === transcript.transcriptNumber.toString()
+                      ? 'bg-gray-100'
+                      : ''
+                  }`}
                 >
                   {columnVisibility.number && (
                     <TableCell className='font-medium p-0'>
                       <Link
-                        href={link(transcript.id)}
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
                         className='block w-full h-full p-4'
                       >
                         #{transcript.transcriptNumber}
@@ -270,7 +326,10 @@ const TranscriptList = ({ projectName }: Props) => {
                   {columnVisibility.name && (
                     <TableCell className='p-0'>
                       <Link
-                        href={link(transcript.id)}
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
                         className='block w-full h-full p-4'
                       >
                         {transcript.name || 'Unnamed'}
@@ -280,7 +339,10 @@ const TranscriptList = ({ projectName }: Props) => {
                   {columnVisibility.messages && (
                     <TableCell className='p-0'>
                       <Link
-                        href={link(transcript.id)}
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
                         className='block w-full h-full p-4'
                       >
                         {transcript.messageCount}
@@ -290,7 +352,10 @@ const TranscriptList = ({ projectName }: Props) => {
                   {columnVisibility.status && (
                     <TableCell className='p-0'>
                       <Link
-                        href={link(transcript.id)}
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
                         className='block w-full h-full p-4'
                       >
                         {transcript.isComplete ? 'Complete' : 'In Progress'}
@@ -300,7 +365,10 @@ const TranscriptList = ({ projectName }: Props) => {
                   {columnVisibility.date && (
                     <TableCell className='p-0'>
                       <Link
-                        href={link(transcript.id)}
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
                         className='block w-full h-full p-4'
                       >
                         {format(new Date(transcript.createdAt), 'MMM d, yyyy')}

@@ -3,13 +3,10 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { PrismaClient } from '@prisma/client'
 
-// Types for the webhook payload
 type WebhookBody = {
   voiceflowProjectId: string;
-  // Add other webhook payload fields if needed
 }
 
-// Types for the transcript data
 type VoiceflowTranscript = {
   _id: string;
   name?: string;
@@ -18,7 +15,14 @@ type VoiceflowTranscript = {
   unread?: boolean;
   reportTags?: string[];
   createdAt: string;
-  // Add other transcript fields if needed
+}
+
+type VoiceflowTurn = {
+  turnID: string;
+  type: string;
+  payload: any;
+  startTime: string;
+  format: string;
 }
 
 const prisma = new PrismaClient()
@@ -104,26 +108,41 @@ async function getTranscripts(voiceflowProjectId: string) {
   return data
 }
 
+async function getTranscriptContent(transcriptId: string, projectId: string, apiKey: string): Promise<VoiceflowTurn[]> {
+  const url = `https://api.voiceflow.com/v2/transcripts/${projectId}/${transcriptId}`
+  const options: RequestInit = {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      Authorization: apiKey,
+    },
+  }
+
+  const res = await fetch(url, options)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch transcript content: ${res.status}`)
+  }
+  const turns = await res.json()
+  
+  if (!Array.isArray(turns)) {
+    console.error('Unexpected transcript content format:', turns)
+    return []
+  }
+  
+  return turns
+}
+
 async function saveTranscriptsToDatabase(
   voiceflowProjectId: string,
   transcripts: VoiceflowTranscript[]
 ) {
-  console.log(
-    'Received transcripts data:',
-    JSON.stringify(transcripts, null, 2)
-  )
+  console.log('Received transcripts data:', JSON.stringify(transcripts, null, 2))
 
   if (!Array.isArray(transcripts)) {
     console.error('Transcripts data is not an array:', transcripts)
     throw new Error('Transcripts data must be an array')
   }
 
-  // Sort transcripts by creation date (oldest first)
-  const sortedTranscripts = [...transcripts].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  )
-
-  // Find the Project record using VoiceflowProjectId (outside of transaction)
   const project = await prisma.project.findFirst({
     where: {
       voiceflowProjectId,
@@ -131,22 +150,21 @@ async function saveTranscriptsToDatabase(
     select: {
       id: true,
       lastTranscriptNumber: true,
+      voiceflowApiKey: true,
     },
   })
 
   if (!project) {
-    throw new Error(
-      `No project found with Voiceflow Project ID: ${voiceflowProjectId}`
-    )
+    throw new Error(`No project found with Voiceflow Project ID: ${voiceflowProjectId}`)
   }
 
-  // Process transcripts in batches of 10
-  const BATCH_SIZE = 10
-  for (let i = 0; i < sortedTranscripts.length; i += BATCH_SIZE) {
-    const batch = sortedTranscripts.slice(i, i + BATCH_SIZE)
+  const BATCH_SIZE = 5 // Reduced due to content fetching
+  const DELAY = 200 // ms between content fetches
+
+  for (let i = 0; i < transcripts.length; i += BATCH_SIZE) {
+    const batch = transcripts.slice(i, i + BATCH_SIZE)
 
     await prisma.$transaction(async (tx) => {
-      // Process each transcript in the current batch
       for (const transcript of batch) {
         if (!transcript || typeof transcript !== 'object') {
           console.error('Invalid transcript object:', transcript)
@@ -154,7 +172,7 @@ async function saveTranscriptsToDatabase(
         }
 
         try {
-          // Find existing transcript to determine if we need a new number
+          // Find existing transcript
           const existingTranscript = await tx.transcript.findFirst({
             where: {
               projectId: project.id,
@@ -162,13 +180,28 @@ async function saveTranscriptsToDatabase(
             },
             select: {
               transcriptNumber: true,
+              turns: { select: { voiceflowTurnId: true } },
             },
           })
 
           let transcriptNumber: number
+          let turns: VoiceflowTurn[] = []
+
+          // Only fetch content for new transcripts or if no turns exist
+          if (!existingTranscript || existingTranscript.turns.length === 0) {
+            try {
+              turns = await getTranscriptContent(
+                transcript._id,
+                voiceflowProjectId,
+                project.voiceflowApiKey
+              )
+              await new Promise(resolve => setTimeout(resolve, DELAY))
+            } catch (error) {
+              console.error(`Failed to fetch content for transcript ${transcript._id}:`, error)
+            }
+          }
 
           if (!existingTranscript) {
-            // Only increment the counter for new transcripts
             const updatedProject = await tx.project.update({
               where: { id: project.id },
               data: { lastTranscriptNumber: { increment: 1 } },
@@ -178,13 +211,12 @@ async function saveTranscriptsToDatabase(
             transcriptNumber = existingTranscript.transcriptNumber
           }
 
-          // Create basic metadata object from available fields
           const metadata = {
             creatorID: transcript.creatorID || null,
             unread: transcript.unread || false,
           }
 
-          // Create or update the transcript
+          // Create or update transcript
           const savedTranscript = await tx.transcript.upsert({
             where: {
               projectId_voiceflowTranscriptId: {
@@ -195,9 +227,7 @@ async function saveTranscriptsToDatabase(
             update: {
               name: transcript.name ?? null,
               image: transcript.image ?? null,
-              reportTags: Array.isArray(transcript.reportTags)
-                ? transcript.reportTags
-                : [],
+              reportTags: Array.isArray(transcript.reportTags) ? transcript.reportTags : [],
               metadata,
               updatedAt: new Date(),
             },
@@ -207,19 +237,32 @@ async function saveTranscriptsToDatabase(
               voiceflowTranscriptId: transcript._id || '',
               name: transcript.name ?? null,
               image: transcript.image ?? null,
-              reportTags: Array.isArray(transcript.reportTags)
-                ? transcript.reportTags
-                : [],
+              reportTags: Array.isArray(transcript.reportTags) ? transcript.reportTags : [],
               metadata,
-              createdAt: transcript.createdAt
-                ? new Date(transcript.createdAt)
-                : new Date(),
+              createdAt: transcript.createdAt ? new Date(transcript.createdAt) : new Date(),
               updatedAt: new Date(),
             },
           })
 
+          // Create turns if we have them
+          if (turns.length > 0) {
+            const turnData = turns.map(turn => ({
+              transcriptId: savedTranscript.id,
+              type: turn.type,
+              payload: turn.payload,
+              startTime: new Date(turn.startTime),
+              format: turn.format,
+              voiceflowTurnId: turn.turnID,
+            }))
+
+            await tx.turn.createMany({
+              data: turnData,
+              skipDuplicates: true,
+            })
+          }
+
           console.log(
-            `Saved/updated transcript with ID: ${savedTranscript.id} and number: ${transcriptNumber}, created at: ${transcript.createdAt}`
+            `Saved transcript ${savedTranscript.id} (#${transcriptNumber}) with ${turns.length} turns`
           )
         } catch (error) {
           console.error(
@@ -231,9 +274,8 @@ async function saveTranscriptsToDatabase(
       }
     })
 
-    // Add a small delay between batches to prevent overwhelming the database
-    if (i + BATCH_SIZE < sortedTranscripts.length) {
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    if (i + BATCH_SIZE < transcripts.length) {
+      await new Promise((resolve) => setTimeout(resolve, 300))
     }
   }
 }

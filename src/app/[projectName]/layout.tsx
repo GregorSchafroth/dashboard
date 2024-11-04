@@ -1,6 +1,6 @@
 import Header from '@/components/Header'
 
-const page = ({
+const Layout = ({
   children,
 }: Readonly<{
   children: React.ReactNode
@@ -8,8 +8,9 @@ const page = ({
   return (
     <>
       <Header />
-      <main className='m-4'>{children}</main>
+      <main className="m-8">{children}</main>
     </>
   )
 }
-export default page
+
+export default Layout
