@@ -13,15 +13,12 @@ type SlateChild = {
   text?: string
   fontWeight?: string
 }
-
 type SlateBlock = {
   children: SlateChild[]
 }
-
 type SlateContent = {
   content: SlateBlock[]
 }
-
 type TextPayload = {
   type: 'text'
   payload: {
@@ -30,7 +27,6 @@ type TextPayload = {
     }
   }
 }
-
 type RequestPayload = {
   type: 'request'
   payload: {
@@ -41,10 +37,7 @@ type RequestPayload = {
     }
   }
 }
-
 type TranscriptItem = TextPayload | RequestPayload
-
-
 type TranscriptProps = {
   projectName: string
   transcriptNumber: string
@@ -57,7 +50,6 @@ function formatProjectName(urlProjectName: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
-
 
 
 // Server-side data fetching function

@@ -1,5 +1,4 @@
-
-import { UserButton } from '@clerk/nextjs'
+import { SignedIn, UserButton } from '@clerk/nextjs'
 import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from './header/Navbar'
@@ -24,14 +23,16 @@ const Header = () => {
             className='max-w-full h-auto sm:hidden'
           />
         </Link>
-        <Navbar />
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: 'size-16',
-            },
-          }}
-        />
+        <SignedIn>
+          <Navbar />
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'size-16',
+              },
+            }}
+          />
+        </SignedIn>
       </nav>
     </header>
   )
