@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { currentUser } from '@clerk/nextjs/server'
+import { toSlug } from '@/lib/utils'
 
 async function getProjectForUser(clerkId: string) {
   console.log('Searching for user with clerkId:', clerkId)
@@ -38,7 +39,7 @@ export default async function HomePage() {
     )
   }
 
-  const projectSlug = project.name.toLowerCase().replace(/\s+/g, '-')
+  const projectSlug = toSlug(project.name)
   console.log('Generated project slug:', projectSlug)
   console.log('Redirecting to:', `/${projectSlug}`)
   

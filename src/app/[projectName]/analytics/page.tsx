@@ -1,93 +1,124 @@
-import getProjectIdFromName from "@/lib/db/getProjectFromName"
+// src/app/[projectName]/analytics/page.tsx
 
-export default async function Page({ params }: { params: { projectName: string } }) {
-  // Need to await the params first
-  const { projectName } = await params
-  const projectId = await getProjectIdFromName(projectName)
-  
-  console.log('Project ID:', projectId)
+import { getProjectFromName } from "@/lib/utils"
+import Analytics from './components/Analytics'; // Using the component from your paste
 
-  return (
-    <div>page</div>
-  )
+
+type PageProps = {
+  params: Promise<{
+    projectName: string
+  }>
 }
 
-// import Analytics from './components/Analytics'
-// import { getSessions } from './services/analyticsServices';
 
-// type Props = {
-//   projectName: string
-// }
+async function getSessions(apiKey: string, projectId: string, startDay: string, endDay: string) {
+  const url = 'https://analytics-api.voiceflow.com/v1/query/usage'
+  const options = {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      authorization: apiKey,
+    },
+    body: JSON.stringify({
+      query: [
+        {
+          name: 'sessions',
+          filter: {
+            projectID: projectId,
+            startTime: `${startDay}T00:00:00.000Z`,
+            endTime: `${endDay}T23:59:59.999Z`,
+          },
+        },
+      ],
+    }),
+  }
 
-// const page = async ({ projectName }: Props) => {
-//   let dailyData = [];
-//   let monthlyData = [];
+  const res = await fetch(url, options)
+  if (!res.ok) {
+    throw new Error('Failed to fetch analytics')
+  }
+  return res.json()
+}
 
-//   try {
-//     const today = new Date();
 
-//     // Helper function to format dates
-//     const formatDate = (date) => date.toISOString().split('T')[0];
+const AnalyticsPage = async ({ params }: PageProps) => {
+  const { projectName } = await params
+  const project = await getProjectFromName(projectName)
+  
+  if (!project) {
+    return <div>Project not found</div>
+  }
 
-//     // Fetching data for the last 7 days
-//     const sevenDaysAgo = new Date();
-//     sevenDaysAgo.setDate(today.getDate() - 6); // We go back 6 days for 7-day period
+  let dailyData = []
+  let monthlyData = []
 
-//     const sevenDaysPromises = [];
-//     for (let i = 0; i < 7; i++) {
-//       const currentDate = new Date(sevenDaysAgo);
-//       currentDate.setDate(sevenDaysAgo.getDate() + i);
-//       const formattedDate = formatDate(currentDate);
+  try {
+    const today = new Date()
+    const formatDate = (date: Date) => date.toISOString().split('T')[0]
 
-//       // Store both the date and the session promise
-//       sevenDaysPromises.push({ date: formattedDate, promise: getSessions(params.projectID, formattedDate, formattedDate) });
-//     }
+    // Fetch last 7 days data
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(today.getDate() - 6)
 
-//     // Wait for all promises to resolve
-//     const sevenDaysResults = await Promise.all(sevenDaysPromises.map(p => p.promise));
+    const sevenDaysPromises = Array.from({ length: 7 }, (_, i) => {
+      const currentDate = new Date(sevenDaysAgo)
+      currentDate.setDate(sevenDaysAgo.getDate() + i)
+      const formattedDate = formatDate(currentDate)
+      
+      return {
+        date: formattedDate,
+        promise: getSessions(
+          project.voiceflowApiKey,
+          project.voiceflowProjectId,
+          formattedDate,
+          formattedDate
+        )
+      }
+    })
 
-//     // Combine the date with the corresponding session count
-//     dailyData = sevenDaysPromises.map((p, index) => ({
-//       date: p.date,
-//       count: sevenDaysResults[index].result[0].count
-//     }));
+    const sevenDaysResults = await Promise.all(
+      sevenDaysPromises.map(p => p.promise)
+    )
 
-//     // Fetching data for the last 12 months
-//     const monthsPromises = [];
-//     for (let i = 0; i < 12; i++) {
-//       const startOfMonth = new Date(today.getFullYear(), today.getMonth() - i, 1);
-//       const endOfMonth = new Date(today.getFullYear(), today.getMonth() - i + 1, 0);
+    dailyData = sevenDaysPromises.map((p, index) => ({
+      date: p.date,
+      count: sevenDaysResults[index].result[0].count
+    }))
 
-//       // Format dates for the start and end of each month
-//       const startDate = formatDate(startOfMonth);
-//       const endDate = formatDate(endOfMonth);
+    // Fetch last 12 months data
+    const monthsPromises = Array.from({ length: 12 }, (_, i) => {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() - i + 1, 0)
+      
+      return {
+        month: formatDate(startOfMonth),
+        promise: getSessions(
+          project.voiceflowApiKey,
+          project.voiceflowProjectId,
+          formatDate(startOfMonth),
+          formatDate(endOfMonth)
+        )
+      }
+    })
 
-//       // Store both the month and the session promise
-//       monthsPromises.push({ month: startDate, promise: getSessions(params.projectID, startDate, endDate) });
-//     }
+    const monthsResults = await Promise.all(
+      monthsPromises.map(p => p.promise)
+    )
 
-//     // Wait for all promises to resolve
-//     const monthsResults = await Promise.all(monthsPromises.map(p => p.promise));
+    monthlyData = monthsPromises.map((p, index) => ({
+      date: p.month,
+      count: monthsResults[index].result[0].count
+    }))
 
-//     // Combine the month with the corresponding session count
-//     monthlyData = monthsPromises.map((p, index) => ({
-//       date: p.month,
-//       count: monthsResults[index].result[0].count
-//     }));
+    // Sort monthly data from oldest to newest
+    monthlyData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-//     // Sort monthly data from oldest to newest
-//     monthlyData.sort((a, b) => new Date(a.date) - new Date(b.date));
+  } catch (error) {
+    console.error('Failed to load session data:', error)
+    return <div>Failed to load analytics data</div>
+  }
 
-//   } catch (error) {
-//     console.error('Failed to load session data:', error);
-//   }
-
-//   console.log('Daily session data:', dailyData);
-//   console.log('Monthly session data:', monthlyData);
-
-//   return (
-//     <Analytics dailyData={dailyData} monthlyData={monthlyData} />
-//   );
-// };
-
-// export default page;
+  return <Analytics dailyData={dailyData} monthlyData={monthlyData} />
+}
+export default AnalyticsPage
