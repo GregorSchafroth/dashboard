@@ -44,6 +44,7 @@ model Transcript {
   reportTags            String[]  @default([])
   language              String?
   outcome               String?
+  topic                 String?
   messageCount          Int       @default(0)
   bookmarked            Boolean   @default(false)
   metadata              Json?
@@ -76,7 +77,7 @@ model Session {
   os                 String
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
-  transcript         Transcript @relation(fields: [transcriptId], references: [id])
+  transcript         Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
 
   @@unique([transcriptId, voiceflowSessionId])
   @@index([voiceflowSessionId])
@@ -90,7 +91,7 @@ model Turn {
   startTime       DateTime
   format          String
   voiceflowTurnId String
-  transcript      Transcript @relation(fields: [transcriptId], references: [id])
+  transcript      Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
 
   @@index([transcriptId])
   @@index([voiceflowTurnId])

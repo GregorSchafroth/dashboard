@@ -31,6 +31,7 @@ import { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
+import { getLanguageFlag } from '@/lib/languages/utils'
 
 type Transcript = {
   id: number
@@ -40,6 +41,12 @@ type Transcript = {
   messageCount: number
   isComplete: boolean
   createdAt: string
+  language: string | null
+  firstResponse: string | null
+  lastResponse: string | null
+  bookmarked: boolean
+  duration: number | null
+  topic: string | null
 }
 
 type Props = {
@@ -75,11 +82,32 @@ const TranscriptList = ({ projectName }: Props) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [columnVisibility, setColumnVisibility] = useState({
     number: true,
-    name: true,
+    name: false,
     messages: true,
-    status: true,
+    language: true,
+    duration: false,
+    firstResponse: false,
+    lastResponse: false,
+    bookmarked: false,
+    topic: true,
     date: true,
   })
+
+  // Helper function to format duration
+  const formatDuration = (seconds: number | null) => {
+    if (!seconds) return '-'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m`
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return `${hours}h ${remainingMinutes}m`
+  }
+
+  // Helper function to format datetime
+  const formatDateTime = (dateStr: string | null) => {
+    if (!dateStr) return '-'
+    return format(new Date(dateStr), 'MMM d, yyyy HH:mm')
+  }
 
   useEffect(() => {
     const fetchTranscripts = async () => {
@@ -240,10 +268,7 @@ const TranscriptList = ({ projectName }: Props) => {
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.number}
                 onCheckedChange={(checked) =>
-                  setColumnVisibility((prev) => ({
-                    ...prev,
-                    number: checked,
-                  }))
+                  setColumnVisibility((prev) => ({ ...prev, number: checked }))
                 }
               >
                 Transcript #
@@ -257,6 +282,14 @@ const TranscriptList = ({ projectName }: Props) => {
                 Name
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
+                checked={columnVisibility.topic}
+                onCheckedChange={(checked) =>
+                  setColumnVisibility((prev) => ({ ...prev, topic: checked }))
+                }
+              >
+                Topic
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
                 checked={columnVisibility.messages}
                 onCheckedChange={(checked) =>
                   setColumnVisibility((prev) => ({
@@ -268,12 +301,59 @@ const TranscriptList = ({ projectName }: Props) => {
                 Messages
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                checked={columnVisibility.status}
+                checked={columnVisibility.language}
                 onCheckedChange={(checked) =>
-                  setColumnVisibility((prev) => ({ ...prev, status: checked }))
+                  setColumnVisibility((prev) => ({
+                    ...prev,
+                    language: checked,
+                  }))
                 }
               >
-                Status
+                Language
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={columnVisibility.duration}
+                onCheckedChange={(checked) =>
+                  setColumnVisibility((prev) => ({
+                    ...prev,
+                    duration: checked,
+                  }))
+                }
+              >
+                Duration
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={columnVisibility.firstResponse}
+                onCheckedChange={(checked) =>
+                  setColumnVisibility((prev) => ({
+                    ...prev,
+                    firstResponse: checked,
+                  }))
+                }
+              >
+                First Response
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={columnVisibility.lastResponse}
+                onCheckedChange={(checked) =>
+                  setColumnVisibility((prev) => ({
+                    ...prev,
+                    lastResponse: checked,
+                  }))
+                }
+              >
+                Last Response
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={columnVisibility.bookmarked}
+                onCheckedChange={(checked) =>
+                  setColumnVisibility((prev) => ({
+                    ...prev,
+                    bookmarked: checked,
+                  }))
+                }
+              >
+                Bookmarked
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.date}
@@ -294,8 +374,17 @@ const TranscriptList = ({ projectName }: Props) => {
             <TableRow>
               {columnVisibility.number && <TableHead>Transcript #</TableHead>}
               {columnVisibility.name && <TableHead>Name</TableHead>}
+              {columnVisibility.topic && <TableHead>Topic</TableHead>}
               {columnVisibility.messages && <TableHead>Messages</TableHead>}
-              {columnVisibility.status && <TableHead>Status</TableHead>}
+              {columnVisibility.language && <TableHead>Language</TableHead>}
+              {columnVisibility.duration && <TableHead>Duration</TableHead>}
+              {columnVisibility.firstResponse && (
+                <TableHead>First Response</TableHead>
+              )}
+              {columnVisibility.lastResponse && (
+                <TableHead>Last Response</TableHead>
+              )}
+              {columnVisibility.bookmarked && <TableHead>Bookmarked</TableHead>}
               {columnVisibility.date && <TableHead>Date</TableHead>}
             </TableRow>
           </TableHeader>
@@ -336,6 +425,19 @@ const TranscriptList = ({ projectName }: Props) => {
                       </Link>
                     </TableCell>
                   )}
+                  {columnVisibility.topic && (
+                    <TableCell className='p-0'>
+                      <Link
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
+                        className='block w-full h-full p-4'
+                      >
+                        {transcript.topic || '-'}
+                      </Link>
+                    </TableCell>
+                  )}
                   {columnVisibility.messages && (
                     <TableCell className='p-0'>
                       <Link
@@ -349,7 +451,7 @@ const TranscriptList = ({ projectName }: Props) => {
                       </Link>
                     </TableCell>
                   )}
-                  {columnVisibility.status && (
+                  {columnVisibility.language && (
                     <TableCell className='p-0'>
                       <Link
                         href={link(transcript.transcriptNumber)}
@@ -358,7 +460,59 @@ const TranscriptList = ({ projectName }: Props) => {
                         }
                         className='block w-full h-full p-4'
                       >
-                        {transcript.isComplete ? 'Complete' : 'In Progress'}
+                        {getLanguageFlag(transcript.language)}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {columnVisibility.duration && (
+                    <TableCell className='p-0'>
+                      <Link
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
+                        className='block w-full h-full p-4'
+                      >
+                        {formatDuration(transcript.duration)}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {columnVisibility.firstResponse && (
+                    <TableCell className='p-0'>
+                      <Link
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
+                        className='block w-full h-full p-4'
+                      >
+                        {formatDateTime(transcript.firstResponse)}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {columnVisibility.lastResponse && (
+                    <TableCell className='p-0'>
+                      <Link
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
+                        className='block w-full h-full p-4'
+                      >
+                        {formatDateTime(transcript.lastResponse)}
+                      </Link>
+                    </TableCell>
+                  )}
+                  {columnVisibility.bookmarked && (
+                    <TableCell className='p-0'>
+                      <Link
+                        href={link(transcript.transcriptNumber)}
+                        onClick={(e) =>
+                          handleTranscriptClick(e, transcript.transcriptNumber)
+                        }
+                        className='block w-full h-full p-4'
+                      >
+                        {transcript.bookmarked ? '★' : '☆'}
                       </Link>
                     </TableCell>
                   )}

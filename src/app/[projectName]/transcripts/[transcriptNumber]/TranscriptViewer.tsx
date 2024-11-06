@@ -1,9 +1,9 @@
 // src/app/[projectName]/transcripts/[transcriptNumber]/TranscriptViewer.tsx
 
-import { PrismaClient } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
+import prisma from '@/lib/prisma'
 
 // Types
 type SlateChild = {
@@ -54,7 +54,6 @@ function formatProjectName(urlProjectName: string): string {
 
 // Server-side data fetching function
 async function getTranscriptData(projectName: string, transcriptNumber: number) {
-  const prisma = new PrismaClient()
   
   try {
     const formattedProjectName = formatProjectName(projectName)
