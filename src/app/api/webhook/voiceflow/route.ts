@@ -130,26 +130,21 @@ const Logger = {
 }
 
 async function processWebhookAsync(body: WebhookBody) {
+  const processStart = Date.now()
+  Logger.sectionStart('Webhook Processing')
+
   try {
     const voiceflowProjectId = body.voiceflowProjectId
-    console.log('Starting async processing for Project ID:', voiceflowProjectId)
-
-    const startTime = Date.now()
+    Logger.progress(`Processing Project ID: ${voiceflowProjectId}`)
 
     const transcripts = await getTranscripts(voiceflowProjectId)
-    console.log(
-      `Fetched ${transcripts.length} transcripts in ${Date.now() - startTime}ms`
-    )
+    Logger.progress(`Fetched ${transcripts.length} transcripts`)
 
-    const processingStartTime = Date.now()
     await processAndSaveTranscripts(voiceflowProjectId, transcripts)
-    console.log(
-      `Processed transcripts in ${Date.now() - processingStartTime}ms`
-    )
 
-    console.log(`Total processing time: ${Date.now() - startTime}ms`)
+    Logger.sectionEnd('Webhook Processing', processStart)
   } catch (error) {
-    console.error('Async processing error:', error)
+    Logger.error('Processing failed', error)
     throw error
   }
 }
@@ -246,13 +241,14 @@ function extractMessages(turns: VoiceflowTurn[]): string[] {
 
         return ''
       } catch (error) {
-        console.error('Error extracting message from turn:', error)
+        Logger.error('Error extracting message from turn', error)
+
         return ''
       }
     })
     .filter((message) => message.length > 0)
 
-  console.log(`Extracted ${messages.length} messages:`, messages)
+  Logger.api('Extracted messages', { count: messages.length, messages })
   return messages
 }
 
@@ -262,8 +258,6 @@ async function processAndSaveTranscripts(
 ) {
   Logger.sectionStart('Transcript Processing')
   const startTime = Date.now()
-
-  Logger.api('Processing transcripts count', { count: transcripts.length })
 
   if (!Array.isArray(transcripts)) {
     Logger.error('Invalid transcripts data', transcripts)
@@ -275,16 +269,6 @@ async function processAndSaveTranscripts(
     select: { id: true, lastTranscriptNumber: true, voiceflowApiKey: true },
   })
 
-  Logger.prisma(
-    'Project query result',
-    project
-      ? {
-          id: project.id,
-          voiceflowApiKey: project.voiceflowApiKey,
-          lastTranscriptNumber: project.lastTranscriptNumber,
-        }
-      : undefined
-  )
   if (!project) {
     Logger.error('Project not found', { voiceflowProjectId })
     throw new Error(
@@ -293,7 +277,7 @@ async function processAndSaveTranscripts(
   }
 
   const BATCH_SIZE = 5
-  const DELAY = 200 // ms between content fetches
+  const DELAY = 200
 
   for (let i = 0; i < transcripts.length; i += BATCH_SIZE) {
     const batch = transcripts.slice(i, i + BATCH_SIZE)
@@ -306,11 +290,9 @@ async function processAndSaveTranscripts(
     for (const transcript of batch) {
       const transcriptStart = Date.now()
 
-      try {
-        await prisma.$transaction(async (tx) => {
-          Logger.prisma(`Starting transaction for transcript ${transcript._id}`)
-
-          // Check if transcript exists
+      await prisma.$transaction(async (tx) => {
+        try {
+          // Check for existing transcript
           const existingTranscript = await tx.transcript.findFirst({
             where: {
               projectId: project.id,
@@ -319,23 +301,17 @@ async function processAndSaveTranscripts(
             select: {
               id: true,
               transcriptNumber: true,
-              turns: { select: { voiceflowTurnId: true } },
+              turns: {
+                select: { voiceflowTurnId: true },
+                distinct: ['voiceflowTurnId'],
+              },
             },
           })
 
-          Logger.prisma(
-            'Existing transcript check',
-            existingTranscript
-              ? {
-                  id: existingTranscript.id,
-                  transcriptNumber: existingTranscript.transcriptNumber,
-                  turnsCount: existingTranscript.turns.length,
-                  turnIds: existingTranscript.turns.map(
-                    (t) => t.voiceflowTurnId
-                  ),
-                }
-              : undefined
-          )
+          Logger.prisma('Checking transcript', {
+            id: transcript._id,
+            exists: !!existingTranscript,
+          })
 
           let transcriptNumber: number
           let turns: VoiceflowTurn[] = []
@@ -347,17 +323,26 @@ async function processAndSaveTranscripts(
             isComplete: false,
           }
 
-          // Only fetch and process turns for new transcripts or those without turns
+          // Only fetch turns if this is a new transcript or if turns are empty
           if (!existingTranscript || existingTranscript.turns.length === 0) {
-            // Get transcript content (turns)
             turns = await getTranscriptContent(
               transcript._id,
               voiceflowProjectId,
               project.voiceflowApiKey
             )
 
-            // Calculate transcript metrics
+            // Calculate metrics with the turns
             metrics = calculateTranscriptMetrics(turns)
+
+            Logger.prisma('Fetched and processed turns', {
+              transcriptId: transcript._id,
+              turnCount: turns.length,
+              metrics: {
+                messageCount: metrics.messageCount,
+                duration: metrics.duration,
+                isComplete: metrics.isComplete,
+              },
+            })
           }
 
           // Analyze transcript content if we have turns
@@ -372,19 +357,19 @@ async function processAndSaveTranscripts(
             if (messages.length > 0) {
               try {
                 analysis = await analyzeTranscript(messages)
-                Logger.prisma('Transaction completed', {
+                Logger.prisma('Analysis completed', {
                   transcriptId: transcript._id,
-                  duration: Date.now() - transcriptStart,
+                  language: analysis.language,
+                  topic: analysis.topic,
                 })
               } catch (error) {
-                Logger.error(
-                  `Failed to process transcript ${transcript._id}`,
-                  error
-                )
+                Logger.error('Analysis failed', error)
               }
             } else {
+              Logger.prisma('No messages to analyze', {
+                transcriptId: transcript._id,
+              })
             }
-          } else {
           }
 
           if (!existingTranscript) {
@@ -473,10 +458,11 @@ async function processAndSaveTranscripts(
             transcriptId: transcript._id,
             duration: Date.now() - transcriptStart,
           })
-        })
-      } catch (error) {
-        Logger.error(`Failed to process transcript ${transcript._id}`, error)
-      }
+        } catch (error) {
+          Logger.error(`Failed to process transcript ${transcript._id}`, error)
+          throw error
+        }
+      })
 
       await new Promise((resolve) => setTimeout(resolve, DELAY))
     }
@@ -572,27 +558,48 @@ async function getTranscriptContent(
   projectId: string,
   apiKey: string
 ): Promise<VoiceflowTurn[]> {
+  // version with start and end date:
+  // const url = `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}?startDate=${startDate}&endDate=${endDate}`
+
+  // version without start and end date
   const url = `https://api.voiceflow.com/v2/transcripts/${projectId}/${transcriptId}`
-  const options: RequestInit = {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      Authorization: apiKey,
-    },
-  }
 
-  const res = await fetch(url, options)
-  if (!res.ok) {
-    throw new Error(`Failed to fetch transcript content: ${res.status}`)
-  }
-  const turns = await res.json()
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: apiKey,
+      },
+    })
 
-  if (!Array.isArray(turns)) {
-    console.error('Unexpected transcript content format:', turns)
-    return []
-  }
+    if (!res.ok) {
+      throw new Error(`Failed to fetch transcript content: ${res.status}`)
+    }
 
-  return turns
+    const turns = await res.json()
+
+    if (!Array.isArray(turns)) {
+      Logger.error('Unexpected transcript content format', { transcriptId })
+      return []
+    }
+
+    // Deduplicate turns by turnID
+    const uniqueTurns = Array.from(
+      new Map(turns.map((turn) => [turn.turnID, turn])).values()
+    )
+
+    Logger.prisma('Fetched transcript content', {
+      transcriptId,
+      originalTurns: turns.length,
+      uniqueTurns: uniqueTurns.length,
+    })
+
+    return uniqueTurns
+  } catch (error) {
+    Logger.error(`Error fetching transcript content: ${transcriptId}`, error)
+    throw error
+  }
 }
 
 export async function POST(req: Request) {
