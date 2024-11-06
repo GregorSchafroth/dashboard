@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 
 import { ClerkProvider } from '@clerk/nextjs'
+import { Toaster } from '@/components/ui/toaster'
 import type { Metadata } from 'next'
 
 import './globals.css'
@@ -18,7 +19,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang='en'>
-        <body>{children}</body>
+        <body>
+          {children}
+          <Toaster />
+        </body>
       </html>
     </ClerkProvider>
   )

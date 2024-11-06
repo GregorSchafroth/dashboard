@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,15 +23,16 @@ model User {
 }
 
 model Project {
-  id                   Int          @id @default(autoincrement())
-  name                 String       @unique
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  id                   Int             @id @default(autoincrement())
+  name                 String          @unique
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
   voiceflowApiKey      String
-  voiceflowProjectId   String       @unique
-  lastTranscriptNumber Int          @default(0)
+  voiceflowProjectId   String
+  lastTranscriptNumber Int             @default(0)
   transcripts          Transcript[]
   users                User[]
+  knowledgeBases       KnowledgeBase[]
 }
 
 model Transcript {
@@ -96,4 +99,30 @@ model Turn {
 enum Role {
   ADMIN
   MEMBER
+}
+
+model KnowledgeBase {
+  id        Int              @id @default(autoincrement())
+  name      String // e.g., "FAQs"
+  projectId Int
+  project   Project          @relation(fields: [projectId], references: [id])
+  entries   KnowledgeEntry[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([projectId, name])
+  @@index([projectId])
+}
+
+model KnowledgeEntry {
+  id              Int           @id @default(autoincrement())
+  question        String
+  answer          String        @db.Text
+  tags            String[]      @default([])
+  knowledgeBaseId Int
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([knowledgeBaseId])
 }

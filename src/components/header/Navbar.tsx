@@ -14,30 +14,38 @@ import { cn } from '@/lib/utils'
 const Navbar = () => {
   const pathname = usePathname()
 
+  // Extract the project identifier from the pathname
+  const projectPath = pathname.split('/')[1] // This will get 'saia' from '/saia/...'
+
   const navItems = [
-    { href: '/test-project/transcripts', label: 'Transcripts' },
-    { href: '/test-project/analytics', label: 'Analytics' },
-    { href: '/test-project/knowledge', label: 'Knowledge' },
+    { path: 'transcripts', label: 'Transcripts' },
+    { path: 'analytics', label: 'Analytics' },
+    { path: 'knowledge', label: 'Knowledge' },
   ]
+
   return (
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} legacyBehavior passHref>
-              <NavigationMenuLink
-                className={cn(
-                  navigationMenuTriggerStyle(),
-                  pathname === item.href && 'bg-accent'
-                )}
-              >
-                {item.label}
-              </NavigationMenuLink>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const href = `/${projectPath}/${item.path}`
+            return (
+              <Link key={href} href={href} legacyBehavior passHref>
+                <NavigationMenuLink
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    pathname === href && 'bg-accent'
+                  )}
+                >
+                  {item.label}
+                </NavigationMenuLink>
+              </Link>
+            )
+          })}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   )
 }
+
 export default Navbar
