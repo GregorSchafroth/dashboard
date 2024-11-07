@@ -14,14 +14,14 @@ import {
   ChartConfig
 } from "@/components/ui/chart"
 
-// Define interfaces for our data structures
-interface DataPoint {
+// Define types for our data structures
+type DataPoint = {
   date: string
   count: number
 }
 
 
-interface AnalyticsProps {
+type AnalyticsProps = {
   dailyData: DataPoint[]
   monthlyData: DataPoint[]
 }

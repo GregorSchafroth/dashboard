@@ -105,7 +105,7 @@ const TranscriptList = ({ projectName }: Props) => {
     duration: false,
     firstResponse: false,
     lastResponse: true,
-    bookmarked: false,
+    bookmarked: true,
     topic: true,
     date: false,
   })
@@ -193,6 +193,47 @@ const TranscriptList = ({ projectName }: Props) => {
       // Apply sort direction
       return sortDirection === 'asc' ? comparison : -comparison
     })
+  }
+
+  const toggleBookmark = async (
+    e: React.MouseEvent,
+    transcriptNumber: number,
+    currentBookmarked: boolean
+  ) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    try {
+      const response = await fetch(
+        `/api/transcripts/${transcriptNumber}/bookmark`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectName,
+            bookmarked: !currentBookmarked,
+          }),
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to update bookmark status')
+      }
+
+      // Update local state
+      setTranscripts((prevTranscripts) =>
+        prevTranscripts.map((t) =>
+          t.transcriptNumber === transcriptNumber
+            ? { ...t, bookmarked: !currentBookmarked }
+            : t
+        )
+      )
+    } catch (err) {
+      console.error('Error updating bookmark:', err)
+      // Optionally add error handling UI here
+    }
   }
 
   useEffect(() => {
@@ -677,10 +718,22 @@ const TranscriptList = ({ projectName }: Props) => {
                         }
                         className='block w-full h-full p-4'
                       >
-                        {transcript.bookmarked ? '★' : '☆'}
+                        <span
+                          onClick={(e) =>
+                            toggleBookmark(
+                              e,
+                              transcript.transcriptNumber,
+                              transcript.bookmarked
+                            )
+                          }
+                          className='cursor-pointer hover:text-yellow-500 transition-colors'
+                        >
+                          {transcript.bookmarked ? '⭐️' : '☆'}
+                        </span>
                       </Link>
                     </TableCell>
                   )}
+
                   {columnVisibility.date && (
                     <TableCell className='p-0'>
                       <Link
