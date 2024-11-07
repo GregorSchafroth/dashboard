@@ -1,4 +1,3 @@
-// src/app/[projectName]transcripts/components/TranscriptList.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -25,13 +24,27 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { CalendarIcon, ChevronDown } from 'lucide-react'
+import { CalendarIcon, ChevronDown, ArrowUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
 import { getLanguageFlag } from '@/lib/languages/utils'
+
+type SortField =
+  | 'transcriptNumber'
+  | 'name'
+  | 'topic'
+  | 'messageCount'
+  | 'language'
+  | 'duration'
+  | 'firstResponse'
+  | 'lastResponse'
+  | 'bookmarked'
+  | 'createdAt'
+
+type SortDirection = 'asc' | 'desc'
 
 type Transcript = {
   id: number
@@ -58,6 +71,10 @@ type Props = {
 const TranscriptList = ({ projectName }: Props) => {
   const router = useRouter()
   const segment = useSelectedLayoutSegment()
+
+  // Add sort state
+  const [sortField, setSortField] = useState<SortField>('lastResponse')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const link = (transcriptNumber: number) => {
     const urlProjectName = projectName
@@ -87,10 +104,10 @@ const TranscriptList = ({ projectName }: Props) => {
     language: true,
     duration: false,
     firstResponse: false,
-    lastResponse: false,
+    lastResponse: true,
     bookmarked: false,
     topic: true,
-    date: true,
+    date: false,
   })
 
   // Helper function to format duration
@@ -107,6 +124,75 @@ const TranscriptList = ({ projectName }: Props) => {
   const formatDateTime = (dateStr: string | null) => {
     if (!dateStr) return '-'
     return format(new Date(dateStr), 'MMM d, yyyy HH:mm')
+  }
+
+  // Handle sort click
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      // If clicking the same field, toggle direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      // If clicking a new field, set it with default desc direction
+      setSortField(field)
+      setSortDirection('desc')
+    }
+  }
+
+  // Sort function for transcripts
+  const sortTranscripts = (data: Transcript[]) => {
+    return [...data].sort((a, b) => {
+      let comparison = 0
+
+      // Handle different field types
+      switch (sortField) {
+        case 'transcriptNumber':
+          comparison = a.transcriptNumber - b.transcriptNumber
+          break
+        case 'name':
+          comparison = (a.name || '').localeCompare(b.name || '')
+          break
+        case 'topic':
+          comparison = (a.topic || '').localeCompare(b.topic || '')
+          break
+        case 'messageCount':
+          comparison = a.messageCount - b.messageCount
+          break
+        case 'language':
+          comparison = (a.language || '').localeCompare(b.language || '')
+          break
+        case 'duration':
+          comparison = (a.duration || 0) - (b.duration || 0)
+          break
+        case 'firstResponse':
+          if (!a.firstResponse && !b.firstResponse) comparison = 0
+          else if (!a.firstResponse) comparison = 1
+          else if (!b.firstResponse) comparison = -1
+          else
+            comparison =
+              new Date(a.firstResponse).getTime() -
+              new Date(b.firstResponse).getTime()
+          break
+        case 'lastResponse':
+          if (!a.lastResponse && !b.lastResponse) comparison = 0
+          else if (!a.lastResponse) comparison = 1
+          else if (!b.lastResponse) comparison = -1
+          else
+            comparison =
+              new Date(a.lastResponse).getTime() -
+              new Date(b.lastResponse).getTime()
+          break
+        case 'bookmarked':
+          comparison = Number(a.bookmarked) - Number(b.bookmarked)
+          break
+        case 'createdAt':
+          comparison =
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          break
+      }
+
+      // Apply sort direction
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
   }
 
   useEffect(() => {
@@ -153,59 +239,72 @@ const TranscriptList = ({ projectName }: Props) => {
     fetchTranscripts()
   }, [projectName])
 
-  // Filter data based on search query and date range
-  const filteredData = transcripts.filter((transcript) => {
-    // Search matching function for text fields
-    const matchesSearchQuery = (value: string | number | null | undefined) => {
-      if (value === null || value === undefined) return false
-      return String(value).toLowerCase().includes(searchQuery.toLowerCase())
-    }
-
-    // Format date for searching
-    const formatDateForSearch = (date: Date) => {
-      return date
-        .toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-        .toLowerCase()
-    }
-
-    // Special handling for transcript number search with # prefix
-    const matchesTranscriptNumber = () => {
-      if (searchQuery.startsWith('#')) {
-        const searchNumber = searchQuery.substring(1) // Remove the # prefix
-        return transcript.transcriptNumber === parseInt(searchNumber)
+  // Filter and sort data
+  const filteredAndSortedData = sortTranscripts(
+    transcripts.filter((transcript) => {
+      // Search matching function for text fields
+      const matchesSearchQuery = (
+        value: string | number | null | undefined
+      ) => {
+        if (value === null || value === undefined) return false
+        return String(value).toLowerCase().includes(searchQuery.toLowerCase())
       }
-      return matchesSearchQuery(transcript.transcriptNumber)
-    }
 
-    // Check all searchable fields
-    const matchesSearch =
-      // Transcript number search (including # prefix)
-      matchesTranscriptNumber() ||
-      // ID search
-      matchesSearchQuery(transcript.voiceflowTranscriptId) ||
-      // Name search
-      matchesSearchQuery(transcript.name) ||
-      // Date search - allows searching by "june 2024" or "june 15" or "2024"
-      matchesSearchQuery(formatDateForSearch(new Date(transcript.createdAt))) ||
-      // Simple date format search (fallback)
-      matchesSearchQuery(
-        new Date(transcript.createdAt).toISOString().split('T')[0]
-      )
+      // Format date for searching
+      const formatDateForSearch = (date: Date) => {
+        return date
+          .toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+          .toLowerCase()
+      }
 
-    // Date range filtering
-    const transcriptDate = new Date(transcript.createdAt)
-    const matchesDate =
-      !dateRange?.from ||
-      !dateRange?.to ||
-      (transcriptDate >= dateRange.from &&
-        transcriptDate <= addDays(dateRange.to, 1))
+      // Special handling for transcript number search with # prefix
+      const matchesTranscriptNumber = () => {
+        if (searchQuery.startsWith('#')) {
+          const searchNumber = searchQuery.substring(1)
+          return transcript.transcriptNumber === parseInt(searchNumber)
+        }
+        return matchesSearchQuery(transcript.transcriptNumber)
+      }
 
-    return matchesSearch && matchesDate
-  })
+      // Check all searchable fields
+      const matchesSearch =
+        matchesTranscriptNumber() ||
+        matchesSearchQuery(transcript.voiceflowTranscriptId) ||
+        matchesSearchQuery(transcript.name) ||
+        matchesSearchQuery(
+          formatDateForSearch(new Date(transcript.createdAt))
+        ) ||
+        matchesSearchQuery(
+          new Date(transcript.createdAt).toISOString().split('T')[0]
+        )
+
+      // Date range filtering
+      const transcriptDate = new Date(transcript.createdAt)
+      const matchesDate =
+        !dateRange?.from ||
+        !dateRange?.to ||
+        (transcriptDate >= dateRange.from &&
+          transcriptDate <= addDays(dateRange.to, 1))
+
+      return matchesSearch && matchesDate
+    })
+  )
+
+  // Helper to render sort indicator
+  const renderSortIndicator = (field: SortField) => {
+    return (
+      <ArrowUpDown
+        className={cn(
+          'ml-2 h-4 w-4 inline-block',
+          sortField === field ? 'opacity-100' : 'opacity-50'
+        )}
+      />
+    )
+  }
 
   if (loading) return <div className='p-4'>Loading...</div>
   if (error) return <div className='p-4'>Error: {error}</div>
@@ -361,7 +460,7 @@ const TranscriptList = ({ projectName }: Props) => {
                   setColumnVisibility((prev) => ({ ...prev, date: checked }))
                 }
               >
-                Date
+                Created At
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -372,25 +471,91 @@ const TranscriptList = ({ projectName }: Props) => {
         <Table>
           <TableHeader>
             <TableRow>
-              {columnVisibility.number && <TableHead>Transcript #</TableHead>}
-              {columnVisibility.name && <TableHead>Name</TableHead>}
-              {columnVisibility.topic && <TableHead>Topic</TableHead>}
-              {columnVisibility.messages && <TableHead>Messages</TableHead>}
-              {columnVisibility.language && <TableHead>Language</TableHead>}
-              {columnVisibility.duration && <TableHead>Duration</TableHead>}
+              {columnVisibility.number && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('transcriptNumber')}
+                >
+                  Transcript #{renderSortIndicator('transcriptNumber')}
+                </TableHead>
+              )}
+              {columnVisibility.name && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('name')}
+                >
+                  Name{renderSortIndicator('name')}
+                </TableHead>
+              )}
+              {columnVisibility.topic && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('topic')}
+                >
+                  Topic{renderSortIndicator('topic')}
+                </TableHead>
+              )}
+              {columnVisibility.messages && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('messageCount')}
+                >
+                  Messages{renderSortIndicator('messageCount')}
+                </TableHead>
+              )}
+              {columnVisibility.language && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('language')}
+                >
+                  Language{renderSortIndicator('language')}
+                </TableHead>
+              )}
+              {columnVisibility.duration && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('duration')}
+                >
+                  Duration{renderSortIndicator('duration')}
+                </TableHead>
+              )}
               {columnVisibility.firstResponse && (
-                <TableHead>First Response</TableHead>
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('firstResponse')}
+                >
+                  First Response{renderSortIndicator('firstResponse')}
+                </TableHead>
               )}
               {columnVisibility.lastResponse && (
-                <TableHead>Last Response</TableHead>
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('lastResponse')}
+                >
+                  Last Response{renderSortIndicator('lastResponse')}
+                </TableHead>
               )}
-              {columnVisibility.bookmarked && <TableHead>Bookmarked</TableHead>}
-              {columnVisibility.date && <TableHead>Date</TableHead>}
+              {columnVisibility.bookmarked && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('bookmarked')}
+                >
+                  Bookmarked{renderSortIndicator('bookmarked')}
+                </TableHead>
+              )}
+              {columnVisibility.date && (
+                <TableHead
+                  className='cursor-pointer'
+                  onClick={() => handleSort('createdAt')}
+                >
+                  Created At{renderSortIndicator('createdAt')}
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.length > 0 ? (
-              filteredData.map((transcript) => (
+            {filteredAndSortedData.length > 0 ? (
+              filteredAndSortedData.map((transcript) => (
                 <TableRow
                   key={transcript.transcriptNumber}
                   className={`cursor-pointer hover:bg-gray-50 ${

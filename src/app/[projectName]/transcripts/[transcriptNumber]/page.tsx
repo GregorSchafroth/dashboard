@@ -1,6 +1,6 @@
 // src/app/[projectName]/transcripts/[transcriptNumber]/page.tsx
 
-import TranscriptViewer from './TranscriptViewer'
+import TranscriptViewer from './components/TranscriptViewer'
 
 type PageProps = {
   params: Promise<{

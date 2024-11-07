@@ -1,4 +1,4 @@
-// app/api/webhook/voiceflow/route.ts
+// app/api/webhook/voiceflow/route.ts NEW
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { Prisma } from '@prisma/client'
@@ -73,60 +73,94 @@ type LogData = Record<string, unknown>
 
 // Logger utility with category support
 const Logger = {
+  private: {
+    formatTime: () => new Date().toISOString().split('T')[1].split('.')[0],
+    formatData: (data?: LogData) =>
+      data ? ' | ' + JSON.stringify(data, null, 0).replace(/\s+/g, ' ') : '',
+    formatDuration: (ms: number) => `${ms}ms`,
+  },
+
   sectionStart: (name: string) => {
     if (process.env.DEBUG_API === 'true') {
-      console.log('\n' + '='.repeat(50))
-      console.log(`🚀 Starting: ${name} at ${new Date().toISOString()}`)
-      console.log('='.repeat(50))
+      console.log(`[${Logger.private.formatTime()}] ▶️  ${name}`)
     }
   },
 
   sectionEnd: (name: string, startTime: number) => {
     if (process.env.DEBUG_API === 'true') {
       const duration = Date.now() - startTime
-      console.log('-'.repeat(50))
-      console.log(`✅ Completed: ${name} in ${duration}ms`)
-      console.log('-'.repeat(50) + '\n')
+      console.log(
+        `[${Logger.private.formatTime()}] ✅ ${name} completed in ${Logger.private.formatDuration(
+          duration
+        )}`
+      )
     }
   },
 
   progress: (message: string) => {
     if (process.env.DEBUG_API === 'true') {
-      console.log(`→ ${message}`)
+      console.log(`[${Logger.private.formatTime()}] → ${message}`)
     }
   },
 
   error: (message: string, error: unknown) => {
-    // Always log errors regardless of debug settings
-    console.error('❌ Error:', message)
+    const time = Logger.private.formatTime()
+    console.error(`[${time}] ❌ ${message}`)
     if (error instanceof Error) {
-      console.error(`   ${error.message}`)
+      console.error(`[${time}] └─ ${error.message}`)
       if (error.stack && process.env.DEBUG_API === 'true') {
-        console.error(
-          `   Stack trace:\n   ${error.stack
-            .split('\n')
-            .slice(1)
-            .join('\n   ')}`
-        )
+        const stackLines = error.stack.split('\n').slice(1)
+        console.error(`[${time}] └─ ${stackLines[0].trim()}`)
       }
     } else {
-      console.error('   Unknown error:', error)
+      console.error(`[${time}] └─ Unknown error:`, error)
     }
   },
 
   prisma: (message: string, data?: LogData) => {
     if (process.env.DEBUG_PRISMA === 'true') {
-      console.log(`🔋 Prisma:`, message)
-      if (data) console.log(JSON.stringify(data, null, 2))
+      console.log(
+        `[${Logger.private.formatTime()}] 🔋 ${message}${Logger.private.formatData(
+          data
+        )}`
+      )
     }
   },
 
   api: (message: string, data?: LogData) => {
     if (process.env.DEBUG_API === 'true') {
-      console.log(`🔌 API:`, message)
-      if (data) console.log(JSON.stringify(data, null, 2))
+      console.log(
+        `[${Logger.private.formatTime()}] 🔌 ${message}${Logger.private.formatData(
+          data
+        )}`
+      )
     }
   },
+}
+
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> {
+  let lastError: Error | undefined
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error as Error
+      Logger.error(`Attempt ${i + 1} failed`, error)
+
+      if (i < retries - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, delay * Math.pow(2, i))
+        )
+      }
+    }
+  }
+
+  throw lastError
 }
 
 async function processWebhookAsync(body: WebhookBody) {
@@ -264,6 +298,10 @@ async function processAndSaveTranscripts(
     throw new Error('Transcripts data must be an array')
   }
 
+  const sortedTranscripts = [...transcripts].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  )
+
   const project = await prisma.project.findFirst({
     where: { voiceflowProjectId },
     select: { id: true, lastTranscriptNumber: true, voiceflowApiKey: true },
@@ -279,8 +317,8 @@ async function processAndSaveTranscripts(
   const BATCH_SIZE = 5
   const DELAY = 200
 
-  for (let i = 0; i < transcripts.length; i += BATCH_SIZE) {
-    const batch = transcripts.slice(i, i + BATCH_SIZE)
+  for (let i = 0; i < sortedTranscripts.length; i += BATCH_SIZE) {
+    const batch = sortedTranscripts.slice(i, i + BATCH_SIZE)
     Logger.progress(
       `Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(
         transcripts.length / BATCH_SIZE
@@ -301,10 +339,10 @@ async function processAndSaveTranscripts(
             select: {
               id: true,
               transcriptNumber: true,
-              turns: {
-                select: { voiceflowTurnId: true },
-                distinct: ['voiceflowTurnId'],
-              },
+              turns: { select: { voiceflowTurnId: true } },
+              language: true,
+              topic: true,
+              name: true,
             },
           })
 
@@ -323,36 +361,43 @@ async function processAndSaveTranscripts(
             isComplete: false,
           }
 
-          // Only fetch turns if this is a new transcript or if turns are empty
-          if (!existingTranscript || existingTranscript.turns.length === 0) {
-            turns = await getTranscriptContent(
-              transcript._id,
-              voiceflowProjectId,
-              project.voiceflowApiKey
-            )
+          // Always fetch the latest turns to check for updates
+          turns = await getTranscriptContent(
+            transcript._id,
+            voiceflowProjectId,
+            project.voiceflowApiKey
+          )
 
-            // Calculate metrics with the turns
-            metrics = calculateTranscriptMetrics(turns)
+          // Calculate metrics with the turns
+          metrics = calculateTranscriptMetrics(turns)
 
-            Logger.prisma('Fetched and processed turns', {
-              transcriptId: transcript._id,
-              turnCount: turns.length,
-              metrics: {
-                messageCount: metrics.messageCount,
-                duration: metrics.duration,
-                isComplete: metrics.isComplete,
-              },
-            })
-          }
+          Logger.prisma('Fetched and processed turns', {
+            transcriptId: transcript._id,
+            turnCount: turns.length,
+            metrics: {
+              messageCount: metrics.messageCount,
+              duration: metrics.duration,
+              isComplete: metrics.isComplete,
+            },
+          })
 
-          // Analyze transcript content if we have turns
-          let analysis = {
-            language: '',
-            topic: '💭 Unknown Topic',
-            name: 'unknown',
-          }
+          // Only analyze if it's a new transcript or if we have new turns
+          let analysis = existingTranscript
+            ? {
+                language: existingTranscript.language || '',
+                topic: existingTranscript.topic || '💭 Unknown Topic',
+                name: existingTranscript.name || 'unknown',
+              }
+            : {
+                language: '',
+                topic: '💭 Unknown Topic',
+                name: 'unknown',
+              }
 
-          if (turns.length > 0) {
+          if (
+            !existingTranscript ||
+            turns.length > existingTranscript.turns.length
+          ) {
             const messages = extractMessages(turns)
             if (messages.length > 0) {
               try {
@@ -361,14 +406,19 @@ async function processAndSaveTranscripts(
                   transcriptId: transcript._id,
                   language: analysis.language,
                   topic: analysis.topic,
+                  isUpdate: !!existingTranscript,
                 })
               } catch (error) {
                 Logger.error('Analysis failed', error)
+                // Keep existing analysis if available
+                if (existingTranscript) {
+                  analysis = {
+                    language: existingTranscript.language || '',
+                    topic: existingTranscript.topic || '💭 Unknown Topic',
+                    name: existingTranscript.name || 'unknown',
+                  }
+                }
               }
-            } else {
-              Logger.prisma('No messages to analyze', {
-                transcriptId: transcript._id,
-              })
             }
           }
 
@@ -404,15 +454,16 @@ async function processAndSaveTranscripts(
                 ? transcript.reportTags
                 : [],
               metadata,
-              language: analysis.language || '',
-              topic: analysis.topic,
-              ...(turns.length > 0 && {
-                messageCount: metrics.messageCount,
-                isComplete: metrics.isComplete,
-                firstResponse: metrics.firstResponse,
-                lastResponse: metrics.lastResponse,
-                duration: metrics.duration,
-              }),
+              language: analysis.language || existingTranscript?.language || '',
+              topic:
+                analysis.topic ||
+                existingTranscript?.topic ||
+                '💭 Unknown Topic',
+              messageCount: metrics.messageCount,
+              isComplete: metrics.isComplete,
+              firstResponse: metrics.firstResponse,
+              lastResponse: metrics.lastResponse,
+              duration: metrics.duration,
               updatedAt: new Date(),
             },
             create: {
@@ -439,19 +490,34 @@ async function processAndSaveTranscripts(
 
           // Create turns if we have them
           if (turns.length > 0) {
-            const turnData = turns.map((turn) => ({
-              transcriptId: savedTranscript.id,
-              type: turn.type,
-              payload: turn.payload as Prisma.InputJsonValue,
-              startTime: new Date(turn.startTime),
-              format: turn.format,
-              voiceflowTurnId: turn.turnID,
-            }))
+            const existingTurnIds = new Set(
+              existingTranscript?.turns.map((t) => t.voiceflowTurnId) || []
+            )
 
-            await tx.turn.createMany({
-              data: turnData,
-              skipDuplicates: true,
-            })
+            const newTurns = turns.filter(
+              (turn) => !existingTurnIds.has(turn.turnID)
+            )
+
+            if (newTurns.length > 0) {
+              const turnData = newTurns.map((turn) => ({
+                transcriptId: savedTranscript.id,
+                type: turn.type,
+                payload: turn.payload as Prisma.InputJsonValue,
+                startTime: new Date(turn.startTime),
+                format: turn.format,
+                voiceflowTurnId: turn.turnID,
+              }))
+
+              await tx.turn.createMany({
+                data: turnData,
+                skipDuplicates: true,
+              })
+
+              Logger.prisma('Created new turns', {
+                transcriptId: transcript._id,
+                newTurnsCount: newTurns.length,
+              })
+            }
           }
 
           Logger.prisma('Transaction completed', {
@@ -529,77 +595,155 @@ async function getTranscripts(voiceflowProjectId: string) {
 
   const apiKey = project.voiceflowApiKey
 
-  const url = `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}`
-  Logger.api('Making Voiceflow API request', { url })
+  // Get dates for the range (since yesterday)
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - 1)
+  startDate.setHours(0, 0, 0, 0)
 
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      Authorization: apiKey,
-    },
-  })
+  const endDate = new Date()
+  endDate.setDate(endDate.getDate() + 1)
+  endDate.setHours(23, 59, 59, 999)
 
-  if (!res.ok) {
-    Logger.error('Voiceflow API error', { status: res.status })
-    throw new Error(`Failed to fetch transcripts: ${res.status}`)
+  const formatDate = (date: Date) => {
+    return date.toISOString().split('T')[0]
   }
 
-  const data = await res.json()
-  Logger.api('Voiceflow API response received', {
-    count: Array.isArray(data) ? data.length : 'invalid',
-  })
+  // Try different URL formats in case one fails
+  const urls = [
+    // with date range
+    `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}?startDate=${formatDate(
+      startDate
+    )}&endDate=${formatDate(endDate)}`,
+    // without date parameters
+    // `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}`,
+  ]
 
-  return Array.isArray(data) ? data : []
+  for (const url of urls) {
+    try {
+      Logger.api('Attempting Voiceflow API request', { url })
+
+      const response = await withRetry(
+        async () => {
+          const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+              Authorization: apiKey,
+              'Cache-Control': 'no-cache',
+            },
+            next: { revalidate: 0 }, // Disable caching
+          })
+
+          if (!res.ok) {
+            const errorText = await res.text()
+            Logger.error('Voiceflow API error', {
+              status: res.status,
+              url,
+              error: errorText,
+              headers: Object.fromEntries(res.headers.entries()),
+            })
+            throw new Error(
+              `Failed to fetch transcripts: ${res.status} - ${errorText}`
+            )
+          }
+
+          return res
+        },
+        3,
+        1000
+      )
+
+      const data = await response.json()
+
+      if (!Array.isArray(data)) {
+        Logger.error('Invalid response format', { data })
+        continue // Try next URL if format is invalid
+      }
+
+      Logger.api('Voiceflow API response received', {
+        url,
+        count: data.length,
+      })
+
+      return data
+    } catch (error) {
+      Logger.error(`Failed to fetch transcripts with URL: ${url}`, error)
+      // Continue to next URL if this one failed
+      continue
+    }
+  }
+
+  throw new Error('All transcript fetch attempts failed')
 }
 
 async function getTranscriptContent(
   transcriptId: string,
-  projectId: string,
+  voiceflowProjectId: string,
   apiKey: string
 ): Promise<VoiceflowTurn[]> {
-  // version with start and end date:
-  // const url = `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}?startDate=${startDate}&endDate=${endDate}`
+  const url = `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}/${transcriptId}`
 
-  // version without start and end date
-  const url = `https://api.voiceflow.com/v2/transcripts/${projectId}/${transcriptId}`
+  return await withRetry(
+    async () => {
+      try {
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: apiKey,
+            'Cache-Control': 'no-cache',
+          },
+          next: { revalidate: 0 }, // Disable caching
+        })
 
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: apiKey,
-      },
-    })
+        if (!res.ok) {
+          const errorText = await res.text()
+          Logger.error('Transcript content fetch failed', {
+            status: res.status,
+            transcriptId,
+            projectId: voiceflowProjectId,
+            error: errorText,
+            headers: Object.fromEntries(res.headers.entries()),
+          })
+          throw new Error(
+            `Failed to fetch transcript content: ${res.status} - ${errorText}`
+          )
+        }
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch transcript content: ${res.status}`)
-    }
+        const turns = await res.json()
 
-    const turns = await res.json()
+        if (!Array.isArray(turns)) {
+          Logger.error('Unexpected transcript content format', {
+            transcriptId,
+            received: typeof turns,
+            content: turns,
+          })
+          return []
+        }
 
-    if (!Array.isArray(turns)) {
-      Logger.error('Unexpected transcript content format', { transcriptId })
-      return []
-    }
+        // Deduplicate turns by turnID
+        // const uniqueTurns = Array.from(
+        //   new Map(turns.map((turn) => [turn.turnID, turn])).values()
+        // )
 
-    // Deduplicate turns by turnID
-    const uniqueTurns = Array.from(
-      new Map(turns.map((turn) => [turn.turnID, turn])).values()
-    )
+        Logger.prisma('Fetched transcript content', {
+          transcriptId,
+          originalTurns: turns.length,
+          // uniqueTurns: uniqueTurns.length,
+        })
 
-    Logger.prisma('Fetched transcript content', {
-      transcriptId,
-      originalTurns: turns.length,
-      uniqueTurns: uniqueTurns.length,
-    })
-
-    return uniqueTurns
-  } catch (error) {
-    Logger.error(`Error fetching transcript content: ${transcriptId}`, error)
-    throw error
-  }
+        return turns
+      } catch (error) {
+        Logger.error(
+          `Error fetching transcript content: ${transcriptId}`,
+          error
+        )
+        throw error
+      }
+    },
+    3,
+    1000
+  )
 }
 
 export async function POST(req: Request) {

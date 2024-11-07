@@ -34,7 +34,7 @@ const Navbar = () => {
                 <NavigationMenuLink
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    pathname === href && 'bg-accent'
+                    pathname.startsWith(href) && 'bg-accent'
                   )}
                 >
                   {item.label}

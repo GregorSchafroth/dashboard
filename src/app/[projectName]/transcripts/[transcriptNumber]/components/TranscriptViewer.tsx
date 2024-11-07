@@ -1,9 +1,8 @@
-// src/app/[projectName]/transcripts/[transcriptNumber]/TranscriptViewer.tsx
+// src/app/[projectName]/transcripts/[transcriptNumber]/components/TranscriptViewer.tsx
 
-import { notFound } from 'next/navigation'
-import ReactMarkdown from 'react-markdown'
-import rehypeRaw from 'rehype-raw'
 import prisma from '@/lib/prisma'
+import { notFound } from 'next/navigation'
+import ConversationDisplay from './ConversationDisplay'
 
 // Types
 type SlateChild = {
@@ -166,41 +165,23 @@ const TranscriptViewer = async ({
       payload: turn.payload
     } as TranscriptItem))
 
+    const formattedTurns = turns.map(item => ({
+      content: extractContent(item),
+      isUser: item.type === 'request'
+    }))
+  
     return (
       <div className="h-full flex flex-col">
         <h2 className='text-2xl mb-5 truncate'>
-          {transcript.name || `Transcript #${transcriptNumber}`}
+          {`Transcript #${transcriptNumber}`}
+          {transcript.topic && (
+            <span className="ml-2">
+              | {transcript.topic}
+            </span>
+          )}
         </h2>
         <hr />
-        <div className='flex-1 overflow-auto py-4'>
-          <div className='flex flex-col gap-4'>
-            {turns.map((item, index) => {
-              const content = extractContent(item)
-              const isUser = item.type === 'request'
-              if (!content) return null
-              return (
-                <div
-                  key={index}
-                  className={`flex ${
-                    isUser ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-lg px-4 py-2 rounded-lg text-sm ${
-                      isUser
-                        ? 'bg-blue-500 text-white ml-8'
-                        : 'bg-gray-100 text-gray-800 mr-8'
-                    }`}
-                  >
-                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                      {content}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <ConversationDisplay turns={formattedTurns} />
       </div>
     )
   } catch (error) {
