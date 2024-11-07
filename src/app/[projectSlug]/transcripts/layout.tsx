@@ -4,16 +4,21 @@ import TranscriptList from './components/TranscriptList'
 
 type LayoutProps = {
   children: React.ReactNode
-  params: {
+  params?: Promise<{
     projectSlug: string
-  }
+  }>
 }
 
 export default async function TranscriptsLayout({
   children,
   params,
 }: LayoutProps) {
-  const { projectSlug } = await params
+  if (!params) {
+    throw new Error('Project slug is required')
+  }
+
+  const resolvedParams = await params
+  const { projectSlug } = resolvedParams
 
   return (
     <ResizablePanelLayout

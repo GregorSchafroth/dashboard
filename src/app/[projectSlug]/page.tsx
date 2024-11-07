@@ -3,30 +3,33 @@
 import AnalyticsPage from './analytics/page'
 import TranscriptList from './transcripts/components/TranscriptList'
 
+interface SearchParams {
+  [key: string]: string | string[] | undefined
+}
+
 type PageProps = {
   params?: Promise<{
     projectSlug: string
-  }> | {
-    projectSlug: string
-  }
-  projectSlug?: string
+  }>
+  searchParams?: Promise<SearchParams>
 }
 
-const page = async ({ params, projectSlug: directProjectSlug }: PageProps) => {
-  // Handle both Promise and direct object cases
-  const resolvedParams = await Promise.resolve(params)
-  const projectSlug = directProjectSlug || resolvedParams?.projectSlug
-  
+export default async function Page({ params }: PageProps) {
+  if (!params) {
+    throw new Error('Project slug is required')
+  }
+
+  const resolvedParams = await params
+  const { projectSlug } = resolvedParams
+
   if (!projectSlug) {
     throw new Error('Project slug is required')
   }
 
   return (
     <div>
-      <AnalyticsPage params={{projectSlug}} />
+      <AnalyticsPage params={{ projectSlug }} />
       <TranscriptList projectSlug={projectSlug} />
     </div>
   )
 }
-
-export default page

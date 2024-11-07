@@ -1,13 +1,17 @@
+// src/app/api/transcripts/[transcriptNumber]/bookmark/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { debugLog } from '@/utils/debug'
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { transcriptNumber: string } }
-) {
+interface RouteContext {
+  params: Promise<{
+    transcriptNumber: string
+  }>
+}
+
+export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
-    // Destructure and await params first
+    // Destructure and await params directly
     const { transcriptNumber } = await params
     debugLog(
       'api',

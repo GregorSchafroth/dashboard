@@ -7,9 +7,9 @@ import EditableKnowledgeBase from './components/EditableKnowledgeBase'
 import { debugLog } from '@/utils/debug'
 
 type Props = {
-  params: {
+  params: Promise<{
     projectSlug: string
-  }
+  }>
 }
 
 type FAQ = {
@@ -27,7 +27,7 @@ export default async function KnowledgePage({ params }: Props) {
   }
 
   const voiceflowApiKey = project.voiceflowApiKey
-  debugLog('api','voiceflowApiKey:', voiceflowApiKey)
+  debugLog('api', 'voiceflowApiKey:', voiceflowApiKey)
 
   const projectId = project.id
   const faqs: FAQ[] = []
