@@ -1,35 +1,38 @@
 // src/app/page.tsx
+
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { currentUser } from '@clerk/nextjs/server'
-import { toSlug } from '@/lib/utils'
+import { slugify } from '@/lib/utils'
+import { debugLog } from '@/utils/debug'
+
 
 async function getProjectForUser(clerkId: string) {
-  console.log('Searching for user with clerkId:', clerkId)
+  debugLog('auth', 'Searching for user with clerkId:', clerkId)
   const user = await prisma.user.findUnique({
     where: { clerkId },
     include: {
       project: true,
     },
   })
-  console.log('Found user:', user)
+  debugLog('prisma', 'Found user:', user)
   return user?.project
 }
 
 export default async function HomePage() {
   const user = await currentUser()
-  console.log('Current user from Clerk:', user?.id)
+  debugLog('auth', 'Current user from Clerk:', user?.id)
 
   if (!user) {
-    console.log('No user found, redirecting to sign-in')
+    debugLog('auth', 'No user found, redirecting to sign-in')
     redirect('/sign-in')
   }
 
   const project = await getProjectForUser(user.id)
-  console.log('Found project:', project)
+  debugLog('prisma', 'Found project:', project)
 
   if (!project) {
-    console.log('No project found for user')
+    debugLog('components', 'No project found for user')
     return (
       <div className='flex min-h-screen items-center justify-center'>
         <h1 className='text-3xl'>
@@ -39,9 +42,9 @@ export default async function HomePage() {
     )
   }
 
-  const projectSlug = toSlug(project.name)
-  console.log('Generated project slug:', projectSlug)
-  console.log('Redirecting to:', `/${projectSlug}`)
+  const projectSlug = slugify(project.name)
+  debugLog('components', 'Generated project slug:', projectSlug)
+  debugLog('components', 'Redirecting to:', `/${projectSlug}`)
   
   // Force the redirect to be more immediate
   return redirect(`/${projectSlug}`)

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     })
 
     if (!project) {
-      console.log('Project not found for name:', projectName)
+      debugLog('prisma', 'Project not found for name:', projectName)
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 

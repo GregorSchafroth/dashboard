@@ -1,3 +1,5 @@
+// src/components/header/Navbar.tsx
+
 'use client'
 
 import {
@@ -10,12 +12,11 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { memo } from 'react'
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const pathname = usePathname()
-
-  // Extract the project identifier from the pathname
-  const projectPath = pathname.split('/')[1] // This will get 'saia' from '/saia/...'
+  const projectPath = pathname.split('/')[1]
 
   const navItems = [
     { path: 'transcripts', label: 'Transcripts' },
@@ -46,6 +47,8 @@ const Navbar = () => {
       </NavigationMenuList>
     </NavigationMenu>
   )
-}
+})
+
+Navbar.displayName = 'Navbar'
 
 export default Navbar

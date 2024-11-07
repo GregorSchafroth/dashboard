@@ -4,6 +4,7 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { Project } from '@prisma/client'
 import { prisma } from '@/lib/prisma' // Use the singleton instance
+import { debugLog } from '@/utils/debug'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -14,7 +15,7 @@ export function cn(...inputs: ClassValue[]) {
  * @param name The project name to convert (e.g., "Test Project")
  * @returns The URL slug (e.g., "test-project")
  */
-export function toSlug(name: string): string {
+export function slugify(name: string): string {
   return name
     .toLowerCase() // Convert to lowercase
     .trim() // Remove leading and trailing whitespace
@@ -28,11 +29,11 @@ export function toSlug(name: string): string {
  * @param slug The URL slug to convert (e.g., "test-project")
  * @returns The formatted project name (e.g., "Test Project")
  */
-export function fromSlug(slug: string): string {
+export function unslugify(slug: string): string {
   return slug
-    .split('-') // Split on hyphens
+    .split('-') 
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter of each word
-    .join(' ') // Join with spaces
+    .join(' ') 
 }
 
 /**
@@ -45,29 +46,21 @@ export function isValidSlug(str: string): boolean {
   return slugRegex.test(str)
 }
 
-function formatProjectName(urlProjectName: string | undefined): string {
-  if (!urlProjectName) {
-    throw new Error('Project name is required')
-  }
 
-  return urlProjectName
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
 
-export async function getProjectFromName(
-  urlProjectName: string | undefined
+export async function getProjectFromSlug(
+  projectSlug: string | undefined
 ): Promise<Project | null> {
   try {
-    if (!urlProjectName) {
-      console.log('No project name provided')
+    if (!projectSlug) {
+      debugLog('prisma', 'No project name provided')
       return null
     }
 
-    const formattedProjectName = formatProjectName(urlProjectName)
-    console.log(
-      `Looking for project: "${formattedProjectName}" (from URL: "${urlProjectName}")`
+    const formattedProjectName = unslugify(projectSlug)
+    debugLog(
+      'prisma',
+      `Looking for project: "${formattedProjectName}" (from URL: "${projectSlug}")`
     )
 
     const project = await prisma.project.findFirst({
@@ -77,11 +70,11 @@ export async function getProjectFromName(
     })
 
     if (!project) {
-      console.log(`Project not found: ${formattedProjectName}`)
+      debugLog('prisma', `Project not found: ${formattedProjectName}`)
       return null
     }
 
-    console.log(`Found project: ${project.name} (ID: ${project.id})`)
+    debugLog('prisma', `Found project: ${project.name} (ID: ${project.id})`)
     return project
   } catch (error) {
     console.error('Error fetching project ID:', error)

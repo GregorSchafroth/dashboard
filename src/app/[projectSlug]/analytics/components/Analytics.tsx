@@ -1,18 +1,18 @@
-"use client"
+'use client'
 
-import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
-} from "@/components/ui/card"
+  CardTitle,
+} from '@/components/ui/card'
 import {
   ChartContainer,
   ChartTooltipContent,
-  ChartConfig
-} from "@/components/ui/chart"
+  ChartConfig,
+} from '@/components/ui/chart'
 
 // Define types for our data structures
 type DataPoint = {
@@ -20,51 +20,50 @@ type DataPoint = {
   count: number
 }
 
-
 type AnalyticsProps = {
   dailyData: DataPoint[]
   monthlyData: DataPoint[]
 }
 
-export const description = "A simple area chart"
+export const description = 'A simple area chart'
 
 export default function Analytics({ dailyData, monthlyData }: AnalyticsProps) {
-  const chartDailyData: DataPoint[] = dailyData.map(item => ({
+  const chartDailyData: DataPoint[] = dailyData.map((item) => ({
     date: item.date,
-    count: item.count
+    count: item.count,
   }))
 
-  const chartMonthlyData: DataPoint[] = monthlyData.map(item => ({
+  const chartMonthlyData: DataPoint[] = monthlyData.map((item) => ({
     date: item.date,
-    count: item.count
+    count: item.count,
   }))
 
   const chartConfig: ChartConfig = {
     count: {
-      label: "Session Count",
-      color: "hsl(var(--chart-1))", // Use the same color as before
+      label: 'Session Count',
+      color: 'hsl(var(--chart-1))', // Use the same color as before
     },
   }
 
   // Format function for the tooltip with weekdays
   const formatTooltipDate = (date: string, isMonthly: boolean): string => {
-    const options: Intl.DateTimeFormatOptions = isMonthly 
-      ? { year: 'numeric', month: 'short' } 
+    const options: Intl.DateTimeFormatOptions = isMonthly
+      ? { year: 'numeric', month: 'short' }
       : { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }
     return new Date(date).toLocaleDateString(undefined, options)
   }
 
   // Format function for axis labels with weekdays
   const formatAxisDate = (date: string, isMonthly: boolean): string => {
-    const options: Intl.DateTimeFormatOptions = isMonthly 
-      ? { year: 'numeric', month: 'short' } 
+    const options: Intl.DateTimeFormatOptions = isMonthly
+      ? { year: 'numeric', month: 'short' }
       : { weekday: 'short', day: 'numeric', month: 'short' }
     return new Date(date).toLocaleDateString(undefined, options)
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 m-4">
-      <div className="flex-1 overflow-auto">
+    <div className='flex flex-col lg:flex-row gap-4 m-4'>
+      <div className='flex-1 overflow-auto'>
         <Card>
           <CardHeader>
             <CardTitle>Daily Users</CardTitle>
@@ -84,11 +83,13 @@ export default function Analytics({ dailyData, monthlyData }: AnalyticsProps) {
               >
                 <CartesianGrid vertical={false} />
                 <XAxis
-                  dataKey="date"
+                  dataKey='date'
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value: string) => formatAxisDate(value, false)}
+                  tickFormatter={(value: string) =>
+                    formatAxisDate(value, false)
+                  }
                 />
                 <YAxis
                   tickLine={false}
@@ -98,22 +99,24 @@ export default function Analytics({ dailyData, monthlyData }: AnalyticsProps) {
                   domain={[0, 'auto']}
                 />
                 <Tooltip
-                  labelFormatter={(label: string) => formatTooltipDate(label, false)}
-                  content={<ChartTooltipContent indicator="line" />}
+                  labelFormatter={(label: string) =>
+                    formatTooltipDate(label, false)
+                  }
+                  content={<ChartTooltipContent indicator='line' />}
                 />
                 <Area
-                  dataKey="count"
-                  type="linear"
-                  fill="hsl(var(--chart-1))"
+                  dataKey='count'
+                  type='linear'
+                  fill='hsl(var(--chart-1))'
                   fillOpacity={0.4}
-                  stroke="hsl(var(--chart-1))"
+                  stroke='hsl(var(--chart-1))'
                 />
               </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
-      <div className="flex-1 overflow-auto">
+      <div className='flex-1 overflow-auto'>
         <Card>
           <CardHeader>
             <CardTitle>Monthly Users</CardTitle>
@@ -133,7 +136,7 @@ export default function Analytics({ dailyData, monthlyData }: AnalyticsProps) {
               >
                 <CartesianGrid vertical={false} />
                 <XAxis
-                  dataKey="date"
+                  dataKey='date'
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
@@ -147,15 +150,17 @@ export default function Analytics({ dailyData, monthlyData }: AnalyticsProps) {
                   domain={[0, 'auto']}
                 />
                 <Tooltip
-                  labelFormatter={(label: string) => formatTooltipDate(label, true)}
-                  content={<ChartTooltipContent indicator="line" />}
+                  labelFormatter={(label: string) =>
+                    formatTooltipDate(label, true)
+                  }
+                  content={<ChartTooltipContent indicator='line' />}
                 />
                 <Area
-                  dataKey="count"
-                  type="linear"
-                  fill="hsl(var(--chart-1))"
+                  dataKey='count'
+                  type='linear'
+                  fill='hsl(var(--chart-1))'
                   fillOpacity={0.4}
-                  stroke="hsl(var(--chart-1))"
+                  stroke='hsl(var(--chart-1))'
                 />
               </AreaChart>
             </ChartContainer>

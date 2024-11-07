@@ -1,13 +1,14 @@
 // src/app/[projectName]/knowledge/page.tsx
 import { Card, CardContent } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
-import { getProjectFromName } from '@/lib/utils'
+import { getProjectFromSlug } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import EditableKnowledgeBase from './components/EditableKnowledgeBase'
+import { debugLog } from '@/utils/debug'
 
 type Props = {
   params: {
-    projectName: string
+    projectSlug: string
   }
 }
 
@@ -18,15 +19,15 @@ type FAQ = {
 }
 
 export default async function KnowledgePage({ params }: Props) {
-  const { projectName } = await params
-  const project = await getProjectFromName(projectName)
+  const { projectSlug } = await params
+  const project = await getProjectFromSlug(projectSlug)
 
   if (!project) {
     notFound()
   }
 
   const voiceflowApiKey = project.voiceflowApiKey
-  console.log('voiceflowApiKey:', voiceflowApiKey)
+  debugLog('api','voiceflowApiKey:', voiceflowApiKey)
 
   const projectId = project.id
   const faqs: FAQ[] = []

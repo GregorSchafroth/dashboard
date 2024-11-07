@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client'
 import OpenAI from 'openai'
 import dotenv from 'dotenv'
 import prisma from '@/lib/prisma'
+import { debugLog } from '@/utils/debug'
 
 dotenv.config()
 
@@ -47,7 +48,7 @@ type TranscriptTurn = {
 
 async function enrichTranscripts() {
   try {
-    console.log('Starting transcript enrichment...')
+    debugLog('prisma', 'Starting transcript enrichment...')
 
     const transcripts = await prisma.transcript.findMany({
       where: {
@@ -67,24 +68,25 @@ async function enrichTranscripts() {
       },
     })
 
-    console.log(`Found ${transcripts.length} transcripts to enrich`)
+    debugLog('prisma', `Found ${transcripts.length} transcripts to enrich`)
 
     for (const transcript of transcripts) {
       try {
-        console.log(`Processing transcript ${transcript.id}...`)
+        debugLog('prisma', `Processing transcript ${transcript.id}...`)
 
         const messages = transcript.turns
           .map((turn) => extractContent(turn))
           .filter((content) => content.length > 0)
 
         if (messages.length === 0) {
-          console.log(
+          debugLog(
+            'prisma',
             `No messages found in transcript ${transcript.id}, skipping...`
           )
           continue
         }
 
-        console.log('Extracted messages:', messages)
+        debugLog('prisma', 'Extracted messages:', messages)
 
         const analysis = await analyzeTranscript(messages)
 
@@ -96,13 +98,13 @@ async function enrichTranscripts() {
           },
         })
 
-        console.log(`Successfully enriched transcript ${transcript.id}`)
+        debugLog('prisma', `Successfully enriched transcript ${transcript.id}`)
       } catch (error) {
         console.error(`Error processing transcript ${transcript.id}:`, error)
       }
     }
   } catch (error) {
-    console.error('Error in transcript enrichment:', error)
+    debugLog('prisma', 'Error in transcript enrichment:', error)
   } finally {
     await prisma.$disconnect()
   }
@@ -191,5 +193,5 @@ Respond in the following JSON format only:
 
 // Execute the script
 enrichTranscripts()
-  .then(() => console.log('Enrichment completed successfully'))
+  .then(() => debugLog('api', 'Enrichment completed successfully'))
   .catch((error) => console.error('Enrichment failed:', error))

@@ -25,12 +25,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { CalendarIcon, ChevronDown, ArrowUpDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, unslugify } from '@/lib/utils'
 import { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
 import { getLanguageFlag } from '@/lib/languages/utils'
+import { debugLog } from '@/utils/debug'
 
 type SortField =
   | 'transcriptNumber'
@@ -63,12 +64,12 @@ type Transcript = {
 }
 
 type Props = {
-  projectName: string
+  projectSlug: string
   onTranscriptSelect?: (transcriptId: string) => void
   selectedTranscriptId?: string
 }
 
-const TranscriptList = ({ projectName }: Props) => {
+const TranscriptList = ({ projectSlug }: Props) => {
   const router = useRouter()
   const segment = useSelectedLayoutSegment()
 
@@ -77,11 +78,7 @@ const TranscriptList = ({ projectName }: Props) => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const link = (transcriptNumber: number) => {
-    const urlProjectName = projectName
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')
-    return `/${urlProjectName}/transcripts/${transcriptNumber}`
+    return `/${projectSlug}/transcripts/${transcriptNumber}`
   }
 
   const handleTranscriptClick = (
@@ -204,6 +201,18 @@ const TranscriptList = ({ projectName }: Props) => {
     e.stopPropagation()
 
     try {
+      debugLog(
+        'components',
+        `Toggling bookmark for transcript #${transcriptNumber}`
+      )
+      const projectName = unslugify(projectSlug)
+
+      debugLog('components', `Making API request with:`, {
+        projectName,
+        transcriptNumber,
+        currentBookmarked,
+      })
+
       const response = await fetch(
         `/api/transcripts/${transcriptNumber}/bookmark`,
         {
@@ -231,20 +240,21 @@ const TranscriptList = ({ projectName }: Props) => {
         )
       )
     } catch (err) {
-      console.error('Error updating bookmark:', err)
+      debugLog('components', 'Error updating bookmark:', err)
       // Optionally add error handling UI here
     }
   }
 
   useEffect(() => {
     const fetchTranscripts = async () => {
-      if (!projectName) {
-        setError('Project name is required')
+      if (!projectSlug) {
+        setError('Project slug is required')
         setLoading(false)
         return
       }
 
       try {
+        const projectName = unslugify(projectSlug)
         const response = await fetch(
           `/api/transcripts?projectName=${encodeURIComponent(projectName)}`
         )
@@ -278,7 +288,7 @@ const TranscriptList = ({ projectName }: Props) => {
     }
 
     fetchTranscripts()
-  }, [projectName])
+  }, [projectSlug])
 
   // Filter and sort data
   const filteredAndSortedData = sortTranscripts(
