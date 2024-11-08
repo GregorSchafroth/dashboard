@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getProjectFromSlug } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import EditableKnowledgeBase from './components/EditableKnowledgeBase'
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 
 type Props = {
   params: Promise<{
@@ -27,7 +27,7 @@ export default async function KnowledgePage({ params }: Props) {
   }
 
   const voiceflowApiKey = project.voiceflowApiKey
-  debugLog('api', 'voiceflowApiKey:', voiceflowApiKey)
+  Logger.api('voiceflowApiKey:', voiceflowApiKey)
 
   const projectId = project.id
   const faqs: FAQ[] = []

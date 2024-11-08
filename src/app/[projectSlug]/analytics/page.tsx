@@ -37,7 +37,11 @@ const AnalyticsPage = async ({ params }: Props) => {
     )
   } catch (error) {
     console.error('Failed to load session data:', error)
-    return <div>Failed to load analytics data</div>
+    return (
+      <div className='flex flex-col lg:flex-row gap-4 m-4'>
+        Failed to load analytics data
+      </div>
+    )
   }
 }
 export default AnalyticsPage

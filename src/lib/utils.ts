@@ -4,7 +4,7 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { Project } from '@prisma/client'
 import { prisma } from '@/lib/prisma' // Use the singleton instance
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -31,9 +31,9 @@ export function slugify(name: string): string {
  */
 export function unslugify(slug: string): string {
   return slug
-    .split('-') 
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize first letter of each word
-    .join(' ') 
+    .join(' ')
 }
 
 /**
@@ -46,20 +46,17 @@ export function isValidSlug(str: string): boolean {
   return slugRegex.test(str)
 }
 
-
-
 export async function getProjectFromSlug(
   projectSlug: string | undefined
 ): Promise<Project | null> {
   try {
     if (!projectSlug) {
-      debugLog('prisma', 'No project name provided')
+      Logger.prisma('No project name provided')
       return null
     }
 
     const formattedProjectName = unslugify(projectSlug)
-    debugLog(
-      'prisma',
+    Logger.prisma(
       `Looking for project: "${formattedProjectName}" (from URL: "${projectSlug}")`
     )
 
@@ -70,11 +67,11 @@ export async function getProjectFromSlug(
     })
 
     if (!project) {
-      debugLog('prisma', `Project not found: ${formattedProjectName}`)
+      Logger.prisma(`Project not found: ${formattedProjectName}`)
       return null
     }
 
-    debugLog('prisma', `Found project: ${project.name} (ID: ${project.id})`)
+    Logger.prisma(`Found project: ${project.name} (ID: ${project.id})`)
     return project
   } catch (error) {
     console.error('Error fetching project ID:', error)

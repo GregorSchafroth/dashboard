@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client'
 import OpenAI from 'openai'
 import dotenv from 'dotenv'
 import prisma from '@/lib/prisma'
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 
 dotenv.config()
 
@@ -48,7 +48,7 @@ type TranscriptTurn = {
 
 async function enrichTranscripts() {
   try {
-    debugLog('prisma', 'Starting transcript enrichment...')
+    Logger.prisma('Starting transcript enrichment...')
 
     const transcripts = await prisma.transcript.findMany({
       where: {
@@ -68,25 +68,24 @@ async function enrichTranscripts() {
       },
     })
 
-    debugLog('prisma', `Found ${transcripts.length} transcripts to enrich`)
+    Logger.prisma(`Found ${transcripts.length} transcripts to enrich`)
 
     for (const transcript of transcripts) {
       try {
-        debugLog('prisma', `Processing transcript ${transcript.id}...`)
+        Logger.prisma(`Processing transcript ${transcript.id}...`)
 
         const messages = transcript.turns
           .map((turn) => extractContent(turn))
           .filter((content) => content.length > 0)
 
         if (messages.length === 0) {
-          debugLog(
-            'prisma',
+          Logger.prisma(
             `No messages found in transcript ${transcript.id}, skipping...`
           )
           continue
         }
 
-        debugLog('prisma', 'Extracted messages:', messages)
+        Logger.prisma('Extracted messages:', messages)
 
         const analysis = await analyzeTranscript(messages)
 
@@ -98,13 +97,13 @@ async function enrichTranscripts() {
           },
         })
 
-        debugLog('prisma', `Successfully enriched transcript ${transcript.id}`)
+        Logger.prisma(`Successfully enriched transcript ${transcript.id}`)
       } catch (error) {
         console.error(`Error processing transcript ${transcript.id}:`, error)
       }
     }
   } catch (error) {
-    debugLog('prisma', 'Error in transcript enrichment:', error)
+    Logger.prisma('Error in transcript enrichment:', error)
   } finally {
     await prisma.$disconnect()
   }
@@ -193,5 +192,5 @@ Respond in the following JSON format only:
 
 // Execute the script
 enrichTranscripts()
-  .then(() => debugLog('api', 'Enrichment completed successfully'))
+  .then(() => Logger.api('Enrichment completed successfully'))
   .catch((error) => console.error('Enrichment failed:', error))

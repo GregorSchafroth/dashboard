@@ -1,7 +1,7 @@
 // src/app/api/transcripts/[transcriptNumber]/bookmark/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 
 interface RouteContext {
   params: Promise<{
@@ -13,19 +13,16 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
     // Destructure and await params directly
     const { transcriptNumber } = await params
-    debugLog(
-      'api',
-      `Processing bookmark update for transcript #${transcriptNumber}`
-    )
+    Logger.api(`Processing bookmark update for transcript #${transcriptNumber}`)
 
     const { projectName, bookmarked } = await request.json()
-    debugLog('api', `Request body:`, { projectName, bookmarked })
+    Logger.api(`Request body:`, { projectName, bookmarked })
 
     // Convert to number after getting the param
     const transcriptId = parseInt(transcriptNumber)
 
     if (!projectName || typeof bookmarked !== 'boolean') {
-      debugLog('api', 'Invalid request body:', { projectName, bookmarked })
+      Logger.api('Invalid request body:', { projectName, bookmarked })
       return NextResponse.json(
         { error: 'Invalid request body' },
         { status: 400 }
@@ -33,7 +30,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     }
 
     // First get the project to get its ID
-    debugLog('api', `Looking for project: ${projectName}`)
+    Logger.api(`Looking for project: ${projectName}`)
     const project = await prisma.project.findUnique({
       where: {
         name: projectName,
@@ -41,12 +38,11 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     })
 
     if (!project) {
-      debugLog('api', `Project not found: ${projectName}`)
+      Logger.api(`Project not found: ${projectName}`)
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    debugLog(
-      'api',
+    Logger.api(
       `Found project ID: ${project.id}, updating transcript #${transcriptId}`
     )
 
@@ -63,13 +59,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       },
     })
 
-    debugLog(
-      'api',
+    Logger.api(
       `Successfully updated bookmark for transcript #${transcriptId}`
     )
     return NextResponse.json({ success: true })
   } catch (error) {
-    debugLog('api', 'Error updating bookmark:', error)
+    Logger.error('Error updating bookmark', error)
     return NextResponse.json(
       { error: 'Failed to update bookmark' },
       { status: 500 }

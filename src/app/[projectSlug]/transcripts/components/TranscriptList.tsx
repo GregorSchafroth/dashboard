@@ -31,7 +31,7 @@ import { addDays } from 'date-fns'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
 import { getLanguageFlag } from '@/lib/languages/utils'
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 
 type SortField =
   | 'transcriptNumber'
@@ -201,13 +201,12 @@ const TranscriptList = ({ projectSlug }: Props) => {
     e.stopPropagation()
 
     try {
-      debugLog(
-        'components',
+      Logger.components(
         `Toggling bookmark for transcript #${transcriptNumber}`
       )
       const projectName = unslugify(projectSlug)
 
-      debugLog('components', `Making API request with:`, {
+      Logger.components(`Making API request with:`, {
         projectName,
         transcriptNumber,
         currentBookmarked,
@@ -240,7 +239,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
         )
       )
     } catch (err) {
-      debugLog('components', 'Error updating bookmark:', err)
+      Logger.components('Error updating bookmark:', err)
       // Optionally add error handling UI here
     }
   }

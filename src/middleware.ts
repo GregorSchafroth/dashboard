@@ -7,7 +7,6 @@ import { neonConfig, neon } from '@neondatabase/serverless'
 // Enable WebSocket pooling for better performance
 neonConfig.webSocketConstructor = WebSocket
 neonConfig.useSecureWebSocket = true
-neonConfig.fetchConnectionCache = true
 
 const sql = neon(process.env.DATABASE_URL!)
 
@@ -30,12 +29,12 @@ export default clerkMiddleware(
       // Get the authenticated userId
       const authObject = await auth()
       const userId = authObject.userId
-      
+
       // If no userId is found, redirect to sign-in
       if (!userId) {
         return NextResponse.redirect(new URL('/sign-in', req.url))
       }
-      
+
       // For all other routes, first ensure user is authenticated
       await auth.protect() // this probably doesn't do anything
 

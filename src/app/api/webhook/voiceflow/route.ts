@@ -580,6 +580,8 @@ function calculateTranscriptMetrics(turns: VoiceflowTurn[]) {
 async function getTranscripts(voiceflowProjectId: string) {
   Logger.api('Fetching transcripts', { voiceflowProjectId })
 
+  // STUCK POINT
+
   const project = await prisma.project.findFirst({
     where: { voiceflowProjectId },
     select: { voiceflowApiKey: true },

@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import ConversationDisplay from './ConversationDisplay'
 import { unslugify } from '@/lib/utils'
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 
 // Types
 type SlateChild = {
@@ -49,11 +49,9 @@ async function getTranscriptData(
   projectSlug: string,
   transcriptNumber: number
 ) {
-
   try {
     const projectName = unslugify(projectSlug)
-    debugLog(
-      'prisma',
+    Logger.prisma(
       `Looking for project: "${projectName}" (from URL: "${projectName}")`
     )
 
@@ -65,20 +63,19 @@ async function getTranscriptData(
     })
 
     if (!project) {
-      debugLog('prisma', `Project not found: ${projectName}`)
+      Logger.prisma(`Project not found: ${projectName}`)
       // Let's also check if there are any projects for debugging
       const allProjects = await prisma.project.findMany({
         select: { name: true },
       })
-      debugLog(
-        'prisma',
+      Logger.prisma(
         'Available projects:',
         allProjects.map((p) => p.name)
       )
       return null
     }
 
-    debugLog('prisma', `Found project ID: ${project.id}`)
+    Logger.prisma(`Found project ID: ${project.id}`)
 
     // Then find the transcript using project ID and transcript number
     const transcript = await prisma.transcript.findUnique({
@@ -98,14 +95,13 @@ async function getTranscriptData(
     })
 
     if (!transcript) {
-      debugLog(
-        'prisma',
+      Logger.prisma(
         `Transcript #${transcriptNumber} not found for project ${project.name}`
       )
       return null
     }
 
-    debugLog('prisma', `Found transcript with ${transcript.turns.length} turns`)
+    Logger.prisma(`Found transcript with ${transcript.turns.length} turns`)
     return transcript
   } catch (error) {
     console.error('Error fetching transcript:', error)
@@ -153,7 +149,9 @@ const TranscriptViewer = async ({
   projectSlug,
   transcriptNumber,
 }: TranscriptProps) => {
-  debugLog('components', `TranscriptViewer: Loading ${projectSlug}/${transcriptNumber}`)
+  Logger.components(
+    `TranscriptViewer: Loading ${projectSlug}/${transcriptNumber}`
+  )
 
   try {
     const transcript = await getTranscriptData(
@@ -162,7 +160,7 @@ const TranscriptViewer = async ({
     )
 
     if (!transcript) {
-      debugLog('components', 'Transcript not found, redirecting to 404')
+      Logger.components('Transcript not found, redirecting to 404')
       notFound()
     }
 

@@ -3,7 +3,7 @@
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 import prisma from '@/lib/prisma'
 
 export async function POST(req: Request) {
@@ -15,8 +15,7 @@ export async function POST(req: Request) {
   }
   // Get the headers
   const headerPayload = headers()
-  debugLog(
-    'prisma',
+  Logger.prisma(
     '📨 Received webhook request headers:',
     Object.fromEntries((await headerPayload).entries())
   )
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
 
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    debugLog('prisma', '❌ Missing svix headers')
+    Logger.prisma('❌ Missing svix headers')
     return new Response('Error occured -- no svix headers', {
       status: 400,
     })
@@ -35,12 +34,12 @@ export async function POST(req: Request) {
 
   // get the raw body
   const rawBody = await req.text()
-  debugLog('prisma', '📦 Raw webhook body:', rawBody)
+  Logger.prisma('📦 Raw webhook body:', rawBody)
 
   let payload
   try {
     payload = JSON.parse(rawBody)
-    debugLog('prisma', '📦 Parsed webhook payload:', payload)
+    Logger.prisma('📦 Parsed webhook payload:', payload)
   } catch (error) {
     console.error('❌ Error parsing JSON:', error)
     return new Response('Error parsing request body', {
@@ -85,7 +84,7 @@ export async function POST(req: Request) {
         })
 
         if (existingUser) {
-          debugLog('prisma', 'ℹ️ User already exists:', evt.data.id)
+          Logger.prisma('ℹ️ User already exists:', evt.data.id)
           return new Response('User already exists', { status: 200 })
         }
 
@@ -95,7 +94,7 @@ export async function POST(req: Request) {
             email: evt.data.email_addresses[0].email_address,
           },
         })
-        debugLog('prisma', `✨ User created: ${evt.data.id}`)
+        Logger.prisma(`✨ User created: ${evt.data.id}`)
         break
 
       case 'user.deleted':
@@ -104,7 +103,7 @@ export async function POST(req: Request) {
         })
 
         if (!userToDelete) {
-          debugLog('prisma', 'ℹ️ User not found for deletion:', evt.data.id)
+          Logger.prisma('ℹ️ User not found for deletion:', evt.data.id)
           return new Response('User not found', { status: 200 }) // Still return 200 as it's not an error
         }
 
@@ -113,11 +112,11 @@ export async function POST(req: Request) {
             clerkId: evt.data.id,
           },
         })
-        debugLog('prisma', `🗑️ User deleted: ${evt.data.id}`)
+        Logger.prisma(`🗑️ User deleted: ${evt.data.id}`)
         break
 
       default:
-        debugLog('prisma', `Unhandled webhook event type: ${evt.type}`)
+        Logger.prisma(`Unhandled webhook event type: ${evt.type}`)
     }
 
     return new Response('✅ Webhook processed successfully', { status: 200 })

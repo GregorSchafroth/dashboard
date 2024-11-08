@@ -1,5 +1,5 @@
 // app/api/transcripts/route.ts
-import { debugLog } from '@/utils/debug'
+import { Logger } from '@/utils/debug'
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     // Test database connection first
     try {
       await prisma.$connect()
-      debugLog('prisma', 'Successfully connected to database')
+      Logger.prisma('Successfully connected to database')
     } catch (connectError) {
       console.error('Database connection failed:', connectError)
       return NextResponse.json(
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       )
     }
 
-    debugLog('api', 'Searching transcripts for project:', projectName)
+    Logger.api('Searching transcripts for project:', projectName)
 
     // First, find the project by name
     const project = await prisma.project.findFirst({
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     })
 
     if (!project) {
-      debugLog('prisma', 'Project not found for name:', projectName)
+      Logger.prisma('Project not found for name:', projectName)
       return NextResponse.json(
         { 
           error: 'Project not found',
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       )
     }
 
-    debugLog('api', 'Found project:', project?.id)
+    Logger.api('Found project:', project?.id)
 
     // Then get the transcripts for that project
     const transcripts = await prisma.transcript.findMany({
@@ -72,10 +72,10 @@ export async function GET(request: Request) {
       },
     })
 
-    debugLog('api', `Found ${transcripts.length} transcripts`)
+    Logger.api(`Found ${transcripts.length} transcripts`)
     
     if (transcripts.length > 0) {
-      debugLog('api', 'First transcript:', transcripts[0])
+      Logger.api('First transcript:', transcripts[0])
     }
 
     return NextResponse.json({ data: transcripts })
