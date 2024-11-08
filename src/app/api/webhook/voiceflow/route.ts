@@ -4,6 +4,8 @@ import { headers } from 'next/headers'
 import { Prisma } from '@prisma/client'
 import prisma from '@/lib/prisma'
 import OpenAI from 'openai'
+import { Logger } from '@/utils/debug'
+import { Pool } from 'pg'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -69,74 +71,14 @@ type TranscriptMetrics = {
   isComplete: boolean
 }
 
-type LogData = Record<string, unknown>
-
-// Logger utility with category support
-const Logger = {
-  private: {
-    formatTime: () => new Date().toISOString().split('T')[1].split('.')[0],
-    formatData: (data?: LogData) =>
-      data ? ' | ' + JSON.stringify(data, null, 0).replace(/\s+/g, ' ') : '',
-    formatDuration: (ms: number) => `${ms}ms`,
-  },
-
-  sectionStart: (name: string) => {
-    if (process.env.DEBUG_API === 'true') {
-      console.log(`[${Logger.private.formatTime()}] ▶️  ${name}`)
-    }
-  },
-
-  sectionEnd: (name: string, startTime: number) => {
-    if (process.env.DEBUG_API === 'true') {
-      const duration = Date.now() - startTime
-      console.log(
-        `[${Logger.private.formatTime()}] ✅ ${name} completed in ${Logger.private.formatDuration(
-          duration
-        )}`
-      )
-    }
-  },
-
-  progress: (message: string) => {
-    if (process.env.DEBUG_API === 'true') {
-      console.log(`[${Logger.private.formatTime()}] → ${message}`)
-    }
-  },
-
-  error: (message: string, error: unknown) => {
-    const time = Logger.private.formatTime()
-    console.error(`[${time}] ❌ ${message}`)
-    if (error instanceof Error) {
-      console.error(`[${time}] └─ ${error.message}`)
-      if (error.stack && process.env.DEBUG_API === 'true') {
-        const stackLines = error.stack.split('\n').slice(1)
-        console.error(`[${time}] └─ ${stackLines[0].trim()}`)
-      }
-    } else {
-      console.error(`[${time}] └─ Unknown error:`, error)
-    }
-  },
-
-  prisma: (message: string, data?: LogData) => {
-    if (process.env.DEBUG_PRISMA === 'true') {
-      console.log(
-        `[${Logger.private.formatTime()}] 🔋 ${message}${Logger.private.formatData(
-          data
-        )}`
-      )
-    }
-  },
-
-  api: (message: string, data?: LogData) => {
-    if (process.env.DEBUG_API === 'true') {
-      console.log(
-        `[${Logger.private.formatTime()}] 🔌 ${message}${Logger.private.formatData(
-          data
-        )}`
-      )
-    }
-  },
-}
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // If you're using SSL (likely for production), uncomment the following:
+  ssl:
+    process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : undefined,
+})
 
 async function withRetry<T>(
   operation: () => Promise<T>,
@@ -575,23 +517,40 @@ function calculateTranscriptMetrics(turns: VoiceflowTurn[]) {
 async function getTranscripts(voiceflowProjectId: string) {
   Logger.api('Fetching transcripts', { voiceflowProjectId })
 
-  // STUCK POINT
-  
   try {
     Logger.prisma('Attempting to find project', { voiceflowProjectId })
-    const project = await prisma.project.findFirst({
-      where: { voiceflowProjectId },
-      select: { voiceflowApiKey: true },
-    })
-    Logger.prisma('Project query completed', { found: !!project })
 
-    if (!project) {
+    // STUCK POINT
+    // const project = await prisma.project.findFirst({
+    //   where: { voiceflowProjectId },
+    //   select: { voiceflowApiKey: true },
+    // })
+    // Logger.prisma('Project query completed', { found: !!project })
+
+    // if (!project) {
+    //   throw new Error(
+    //     `No project found with Voiceflow Project ID: ${voiceflowProjectId}`
+    //   )
+    // }
+
+    // const apiKey = project.voiceflowApiKey
+
+    // Use the connection pool to query the database
+    const result = await pool.query(
+      'SELECT "voiceflowApiKey" FROM "Project" WHERE "voiceflowProjectId" = $1 LIMIT 1',
+      [voiceflowProjectId]
+    )
+
+    Logger.prisma('Project query completed', { found: result.rows.length > 0 })
+
+    if (result.rows.length === 0) {
       throw new Error(
         `No project found with Voiceflow Project ID: ${voiceflowProjectId}`
       )
     }
 
-    const apiKey = project.voiceflowApiKey
+    const apiKey = result.rows[0].voiceflowApiKey
+    Logger.prisma('🔑 apiKey:', apiKey)
 
     // Get dates for the range (since yesterday)
     const startDate = new Date()
@@ -687,7 +646,7 @@ async function getTranscripts(voiceflowProjectId: string) {
       })
     }
     throw error
-  } 
+  }
 }
 
 async function getTranscriptContent(
