@@ -1,13 +1,13 @@
 // src/components/Header.tsx
 
-import { SignedIn, UserButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from './header/Navbar'
 
 const Header = () => {
   return (
-    <header>
+    <header className='bg-re'>
       <nav className='m-4 flex justify-between items-center'>
         <Link href='/' className='flex'>
           <Image
@@ -35,6 +35,9 @@ const Header = () => {
             }}
           />
         </SignedIn>
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
       </nav>
     </header>
   )
