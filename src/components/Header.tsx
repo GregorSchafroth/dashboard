@@ -3,14 +3,11 @@
 import {
   SignedIn,
   SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
+  UserButton
 } from '@clerk/nextjs'
 import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from './header/Navbar'
-import { Button } from './ui/button'
 import SignedOutButtons from './header/SignedOutButtons'
 
 const Header = () => {
