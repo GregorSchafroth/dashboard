@@ -575,15 +575,7 @@ function calculateTranscriptMetrics(turns: VoiceflowTurn[]) {
 async function getTranscripts(voiceflowProjectId: string) {
   Logger.api('Fetching transcripts', { voiceflowProjectId })
 
-  // STUCK POINT
-
   try {
-    // Test database connection first
-    Logger.prisma('Testing database connection...')
-    await prisma.$connect()
-    Logger.prisma('Database connection successful')
-
-    // Now try the query with more detailed error handling
     Logger.prisma('Attempting to find project', { voiceflowProjectId })
     const project = await prisma.project.findFirst({
       where: { voiceflowProjectId },
@@ -693,9 +685,7 @@ async function getTranscripts(voiceflowProjectId: string) {
       })
     }
     throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+  } 
 }
 
 async function getTranscriptContent(
