@@ -80,8 +80,8 @@ export default clerkMiddleware(
       return NextResponse.redirect(new URL('/error', req.url))
     }
   },
-  // { debug: process.env.NODE_ENV === 'development' }
-  { debug: process.env.DEBUG_AUTH === 'true' }
+  { debug: process.env.NODE_ENV === 'development' }
+  // { debug: process.env.DEBUG_AUTH === 'true' }
 )
 
 export const config = {
