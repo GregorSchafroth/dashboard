@@ -521,6 +521,7 @@ async function getTranscripts(voiceflowProjectId: string) {
     Logger.prisma('Attempting to find project', { voiceflowProjectId })
 
     // STUCK POINT
+    
     // const project = await prisma.project.findFirst({
     //   where: { voiceflowProjectId },
     //   select: { voiceflowApiKey: true },
