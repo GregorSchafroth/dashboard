@@ -221,11 +221,6 @@ Respond in the following JSON format only:
   try {
     const analysis = JSON.parse(response)
 
-    // Ensure topic has an emoji, add a default if missing
-    if (!analysis.topic.match(/^\p{Emoji}/u)) {
-      analysis.topic = '💭 ' + analysis.topic
-    }
-
     return {
       language: analysis.language,
       topic: analysis.topic,
@@ -582,100 +577,125 @@ async function getTranscripts(voiceflowProjectId: string) {
 
   // STUCK POINT
 
-  const project = await prisma.project.findFirst({
-    where: { voiceflowProjectId },
-    select: { voiceflowApiKey: true },
-  })
+  try {
+    // Test database connection first
+    Logger.prisma('Testing database connection...')
+    await prisma.$connect()
+    Logger.prisma('Database connection successful')
 
-  Logger.prisma('Project lookup result', { found: !!project })
+    // Now try the query with more detailed error handling
+    Logger.prisma('Attempting to find project', { voiceflowProjectId })
+    const project = await prisma.project.findFirst({
+      where: { voiceflowProjectId },
+      select: { voiceflowApiKey: true },
+    })
+    Logger.prisma('Project query completed', { found: !!project })
 
-  if (!project) {
-    throw new Error(
-      `No project found with Voiceflow Project ID: ${voiceflowProjectId}`
-    )
-  }
-
-  const apiKey = project.voiceflowApiKey
-
-  // Get dates for the range (since yesterday)
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - 1)
-  startDate.setHours(0, 0, 0, 0)
-
-  const endDate = new Date()
-  endDate.setDate(endDate.getDate() + 1)
-  endDate.setHours(23, 59, 59, 999)
-
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0]
-  }
-
-  // Try different URL formats in case one fails
-  const urls = [
-    // with date range
-    `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}?startDate=${formatDate(
-      startDate
-    )}&endDate=${formatDate(endDate)}`,
-    // without date parameters
-    // `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}`,
-  ]
-
-  for (const url of urls) {
-    try {
-      Logger.api('Attempting Voiceflow API request', { url })
-
-      const response = await withRetry(
-        async () => {
-          const res = await fetch(url, {
-            method: 'GET',
-            headers: {
-              accept: 'application/json',
-              Authorization: apiKey,
-              'Cache-Control': 'no-cache',
-            },
-            next: { revalidate: 0 }, // Disable caching
-          })
-
-          if (!res.ok) {
-            const errorText = await res.text()
-            Logger.error('Voiceflow API error', {
-              status: res.status,
-              url,
-              error: errorText,
-              headers: Object.fromEntries(res.headers.entries()),
-            })
-            throw new Error(
-              `Failed to fetch transcripts: ${res.status} - ${errorText}`
-            )
-          }
-
-          return res
-        },
-        3,
-        1000
+    if (!project) {
+      throw new Error(
+        `No project found with Voiceflow Project ID: ${voiceflowProjectId}`
       )
-
-      const data = await response.json()
-
-      if (!Array.isArray(data)) {
-        Logger.error('Invalid response format', { data })
-        continue // Try next URL if format is invalid
-      }
-
-      Logger.api('Voiceflow API response received', {
-        url,
-        count: data.length,
-      })
-
-      return data
-    } catch (error) {
-      Logger.error(`Failed to fetch transcripts with URL: ${url}`, error)
-      // Continue to next URL if this one failed
-      continue
     }
-  }
 
-  throw new Error('All transcript fetch attempts failed')
+    const apiKey = project.voiceflowApiKey
+
+    // Get dates for the range (since yesterday)
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - 1)
+    startDate.setHours(0, 0, 0, 0)
+
+    const endDate = new Date()
+    endDate.setDate(endDate.getDate() + 1)
+    endDate.setHours(23, 59, 59, 999)
+
+    const formatDate = (date: Date) => {
+      return date.toISOString().split('T')[0]
+    }
+
+    // Try different URL formats in case one fails
+    const urls = [
+      // with date range
+      `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}?startDate=${formatDate(
+        startDate
+      )}&endDate=${formatDate(endDate)}`,
+      // without date parameters
+      // `https://api.voiceflow.com/v2/transcripts/${voiceflowProjectId}`,
+    ]
+
+    for (const url of urls) {
+      try {
+        Logger.api('Attempting Voiceflow API request', { url })
+
+        const response = await withRetry(
+          async () => {
+            const res = await fetch(url, {
+              method: 'GET',
+              headers: {
+                accept: 'application/json',
+                Authorization: apiKey,
+                'Cache-Control': 'no-cache',
+              },
+              next: { revalidate: 0 }, // Disable caching
+            })
+
+            if (!res.ok) {
+              const errorText = await res.text()
+              Logger.error('Voiceflow API error', {
+                status: res.status,
+                url,
+                error: errorText,
+                headers: Object.fromEntries(res.headers.entries()),
+              })
+              throw new Error(
+                `Failed to fetch transcripts: ${res.status} - ${errorText}`
+              )
+            }
+
+            return res
+          },
+          3,
+          1000
+        )
+
+        const data = await response.json()
+
+        if (!Array.isArray(data)) {
+          Logger.error('Invalid response format', { data })
+          continue // Try next URL if format is invalid
+        }
+
+        Logger.api('Voiceflow API response received', {
+          url,
+          count: data.length,
+        })
+
+        return data
+      } catch (error) {
+        Logger.error(`Failed to fetch transcripts with URL: ${url}`, error)
+        // Continue to next URL if this one failed
+        continue
+      }
+    }
+
+    throw new Error('All transcript fetch attempts failed')
+  } catch (error) {
+    if (error instanceof Error) {
+      Logger.error('Database operation failed', {
+        operation: 'getTranscripts',
+        error: error.message,
+        stack: error.stack,
+        name: error.name,
+      })
+    } else {
+      Logger.error('Database operation failed with unknown error', {
+        operation: 'getTranscripts',
+        error,
+      })
+    }
+    throw error
+  } finally {
+    await prisma.$disconnect()
+  }
 }
 
 async function getTranscriptContent(
