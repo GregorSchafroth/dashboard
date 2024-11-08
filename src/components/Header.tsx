@@ -1,9 +1,17 @@
 // src/components/Header.tsx
 
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from '@clerk/nextjs'
 import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from './header/Navbar'
+import { Button } from './ui/button'
+import SignedOutButtons from './header/SignedOutButtons'
 
 const Header = () => {
   return (
@@ -36,7 +44,7 @@ const Header = () => {
           />
         </SignedIn>
         <SignedOut>
-          <SignInButton />
+          <SignedOutButtons />
         </SignedOut>
       </nav>
     </header>

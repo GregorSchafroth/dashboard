@@ -6,7 +6,7 @@ import { neonConfig, neon } from '@neondatabase/serverless'
 
 // Enable WebSocket pooling for better performance
 neonConfig.webSocketConstructor = WebSocket
-neonConfig.useSecureWebSocket = false // Set to true in production if your DATABASE_URL uses ssl
+neonConfig.useSecureWebSocket = true
 neonConfig.fetchConnectionCache = true
 
 const sql = neon(process.env.DATABASE_URL!)
@@ -27,21 +27,21 @@ export default clerkMiddleware(
         return
       }
 
+      // Get the authenticated userId
+      const authObject = await auth()
+      const userId = authObject.userId
+      
+      // If no userId is found, redirect to sign-in
+      if (!userId) {
+        return NextResponse.redirect(new URL('/sign-in', req.url))
+      }
+      
       // For all other routes, first ensure user is authenticated
-      await auth.protect()
+      await auth.protect() // this probably doesn't do anything
 
       // Get the project slug from the URL
       const projectSlug = req.nextUrl.pathname.split('/')[1]
       if (!projectSlug) return
-
-      // Get the authenticated userId
-      const authObject = await auth()
-      const userId = authObject.userId
-
-      // If no userId is found, redirect to unauthorized
-      if (!userId) {
-        return NextResponse.redirect(new URL('/unauthorized', req.url))
-      }
 
       try {
         // Get both user and project info in parallel using raw SQL
