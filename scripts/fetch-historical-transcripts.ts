@@ -1,8 +1,12 @@
+// scripts/fetch-historical-transcripts.ts
+
 import { Prisma } from '@prisma/client'
 import dotenv from 'dotenv'
 import prisma from '@/lib/prisma'
 
 dotenv.config()
+
+const projectId = 1
 
 type VoiceflowTurn = {
   turnID: string
@@ -76,11 +80,12 @@ type ProjectWithAuth = {
   voiceflowApiKey: string
 }
 
-async function fetchAllHistoricalTranscripts() {
+async function fetchAllHistoricalTranscripts(projectId: number) {
   try {
     console.log('Starting historical transcript fetch...')
 
-    const projects = await prisma.project.findMany({
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
       select: {
         id: true,
         name: true,
@@ -89,61 +94,62 @@ async function fetchAllHistoricalTranscripts() {
       },
     })
 
-    console.log(`Found ${projects.length} projects to process`)
+    if (!project) {
+      console.error(`No project found with ID: ${projectId}`)
+      return
+    }
 
-    for (const project of projects) {
-      console.log(`\nProcessing project: ${project.name}`)
+    console.log(`Processing project: ${project.name}`)
 
-      const url = `https://api.voiceflow.com/v2/transcripts/${project.voiceflowProjectId}`
+    const url = `https://api.voiceflow.com/v2/transcripts/${project.voiceflowProjectId}`
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          Authorization: project.voiceflowApiKey,
-        },
-      })
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: project.voiceflowApiKey,
+      },
+    })
 
-      if (!response.ok) {
-        console.error(
-          `Failed to fetch transcripts for project ${project.name}:`,
-          response.status
-        )
-        continue
-      }
+    if (!response.ok) {
+      console.error(
+        `Failed to fetch transcripts for project ${project.name}:`,
+        response.status
+      )
+      return
+    }
 
-      const transcripts = (await response.json()) as VoiceflowTranscript[]
-      console.log(
-        `Found ${transcripts.length} transcripts for project ${project.name}`
+    const transcripts = (await response.json()) as VoiceflowTranscript[]
+    console.log(
+      `Found ${transcripts.length} transcripts for project ${project.name}`
+    )
+
+    let processedCount = 0
+    const BATCH_SIZE = 5
+    const DELAY = 1000 // 1 second between batches
+
+    for (let i = 0; i < transcripts.length; i += BATCH_SIZE) {
+      const batch = transcripts.slice(i, i + BATCH_SIZE)
+
+      await Promise.all(
+        batch.map(async (transcript) => {
+          try {
+            await processTranscript(project, transcript)
+            processedCount++
+            console.log(
+              `Processed ${processedCount}/${transcripts.length} transcripts for ${project.name}`
+            )
+          } catch (error) {
+            console.error(
+              `Error processing transcript ${transcript._id}:`,
+              error
+            )
+          }
+        })
       )
 
-      let processedCount = 0
-      const BATCH_SIZE = 5
-      const DELAY = 1000 // 1 second between batches
-
-      for (let i = 0; i < transcripts.length; i += BATCH_SIZE) {
-        const batch = transcripts.slice(i, i + BATCH_SIZE)
-
-        await Promise.all(
-          batch.map(async (transcript) => {
-            try {
-              await processTranscript(project, transcript)
-              processedCount++
-              console.log(
-                `Processed ${processedCount}/${transcripts.length} transcripts for ${project.name}`
-              )
-            } catch (error) {
-              console.error(
-                `Error processing transcript ${transcript._id}:`,
-                error
-              )
-            }
-          })
-        )
-
-        if (i + BATCH_SIZE < transcripts.length) {
-          await new Promise((resolve) => setTimeout(resolve, DELAY))
-        }
+      if (i + BATCH_SIZE < transcripts.length) {
+        await new Promise((resolve) => setTimeout(resolve, DELAY))
       }
     }
 
@@ -292,6 +298,6 @@ function calculateTranscriptMetrics(turns: VoiceflowTurn[]): TranscriptMetrics {
 }
 
 // Execute the script
-fetchAllHistoricalTranscripts()
+fetchAllHistoricalTranscripts(projectId)
   .then(() => console.log('Script completed successfully'))
   .catch((error) => console.error('Script failed:', error))

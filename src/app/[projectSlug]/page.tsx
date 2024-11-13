@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <div>
-      <AnalyticsPage params={{ projectSlug }} />
+      <AnalyticsPage params={{ projectSlug }} layout="compact" />
       <TranscriptList projectSlug={projectSlug} />
     </div>
   )

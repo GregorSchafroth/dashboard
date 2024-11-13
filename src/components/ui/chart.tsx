@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import * as RechartsPrimitive from 'recharts'
-
+import { useLanguage } from '@/contexts/LanguageContext'
 import { cn } from '@/lib/utils'
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -20,6 +20,12 @@ export type ChartConfig = {
 
 type ChartContextProps = {
   config: ChartConfig
+}
+
+const languageToLocale: Record<string, string> = {
+  en: 'en-US',
+  de: 'de-DE',
+  // Add other languages as needed
 }
 
 const ChartContext = React.createContext<ChartContextProps | null>(null)
@@ -112,6 +118,8 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: 'line' | 'dot' | 'dashed'
       nameKey?: string
       labelKey?: string
+      formatDate?: boolean // New prop to indicate if we should format dates
+      dateFormatOptions?: Intl.DateTimeFormatOptions // New prop for date formatting options
     }
 >(
   (
@@ -129,10 +137,19 @@ const ChartTooltipContent = React.forwardRef<
       color,
       nameKey,
       labelKey,
+      formatDate = false,
+      dateFormatOptions = {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      },
     },
     ref
   ) => {
     const { config } = useChart()
+    const { language } = useLanguage()
+    const currentLocale = languageToLocale[language] || language
 
     const tooltipLabel = React.useMemo(() => {
       if (hideLabel || !payload?.length) {
@@ -142,10 +159,22 @@ const ChartTooltipContent = React.forwardRef<
       const [item] = payload
       const key = `${labelKey || item.dataKey || item.name || 'value'}`
       const itemConfig = getPayloadConfigFromPayload(config, item, key)
-      const value =
+      let value =
         !labelKey && typeof label === 'string'
           ? config[label as keyof typeof config]?.label || label
           : itemConfig?.label
+
+      // Format date if needed
+      if (formatDate && typeof value === 'string') {
+        try {
+          value = new Date(value).toLocaleDateString(
+            currentLocale,
+            dateFormatOptions
+          )
+        } catch (e) {
+          console.error('Date formatting failed:', e)
+        }
+      }
 
       if (labelFormatter) {
         return (
@@ -168,6 +197,9 @@ const ChartTooltipContent = React.forwardRef<
       labelClassName,
       config,
       labelKey,
+      formatDate,
+      currentLocale,
+      dateFormatOptions,
     ])
 
     if (!active || !payload?.length) {
@@ -236,7 +268,7 @@ const ChartTooltipContent = React.forwardRef<
                       <div className='grid gap-1.5'>
                         {nestLabel ? tooltipLabel : null}
                         <span className='text-muted-foreground'>
-                          {itemConfig?.label || item.name}
+                          {itemConfig?.label || item.name}{'\u00A0'}
                         </span>
                       </div>
                       {item.value && (

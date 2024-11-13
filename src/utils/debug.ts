@@ -1,19 +1,18 @@
 // src/utils/debug.ts
-type LogData = 
-  | Record<string, unknown> 
-  | string 
-  | number 
-  | boolean 
+type LogData =
+  | Record<string, unknown>
+  | string
+  | number
+  | boolean
   | Array<unknown>
   | Error
-  | unknown 
+  | unknown
   | null
   | undefined
 
-
 type DebugCategory = 'api' | 'prisma' | 'components' | 'auth'
 
-interface CategoryConfig {
+type CategoryConfig = {
   enabled: boolean
   emoji: string
 }
@@ -32,23 +31,23 @@ export class Logger {
 
   private static formatData(data?: LogData): string {
     if (data == null) return ''
-    
+
     if (data instanceof Error) {
       return ` | ${data.name}: ${data.message}`
     }
-    
+
     if (Array.isArray(data)) {
       return ' | [' + data.join(', ') + ']'
     }
-    
+
     if (typeof data === 'object') {
       try {
         return ' | ' + JSON.stringify(data, null, 0).replace(/\s+/g, ' ')
       } catch {
-        return ' | [Object]' 
+        return ' | [Object]'
       }
     }
-    
+
     return ' | ' + String(data)
   }
 
@@ -91,7 +90,7 @@ export class Logger {
   static error(message: string, error: unknown) {
     const time = this.formatTime()
     console.error(`[${time}] ❌ ${message}`)
-    
+
     if (error instanceof Error) {
       console.error(`[${time}] └─ ${error.message}`)
       if (error.stack && process.env.DEBUG_API === 'true') {

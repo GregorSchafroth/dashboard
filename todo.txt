@@ -1,3 +1,0 @@
-TODO: Make sure no sensitive information is expoced from reading the url ID and getting all db infos
-TODO: Fix hot reloading issue `GET /saia/transcripts 200 in 36ms`
-TODO: ✅ Remove all interface and replace with type

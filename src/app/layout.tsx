@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 
 import './globals.css'
 import Header from '@/components/Header'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 
 export const metadata: Metadata = {
   title: 'SAIA Dashboard',
@@ -21,11 +22,13 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang='en'>
         <body>
-          <main className='h-screen flex flex-col'>
-            <Header />
-            <main className='flex flex-col flex-1'>{children}</main>
-          </main>
-          <Toaster />
+          <LanguageProvider>
+            <main className='h-screen flex flex-col'>
+              <Header />
+              <main className='flex flex-col flex-1'>{children}</main>
+            </main>
+            <Toaster />
+          </LanguageProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -1,4 +1,4 @@
-// lib/utils.ts
+// src/lib/utils.ts
 
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -55,26 +55,25 @@ export async function getProjectFromSlug(
       return null
     }
 
-    const formattedProjectName = unslugify(projectSlug)
     Logger.prisma(
-      `Looking for project: "${formattedProjectName}" (from URL: "${projectSlug}")`
+      `Looking for project: "${projectSlug}" (from URL: "${projectSlug}")`
     )
 
     const project = await prisma.project.findFirst({
       where: {
-        name: formattedProjectName,
+        slug: projectSlug,
       },
     })
 
     if (!project) {
-      Logger.prisma(`Project not found: ${formattedProjectName}`)
+      Logger.prisma(`Project not found: ${projectSlug}`)
       return null
     }
 
     Logger.prisma(`Found project: ${project.name} (ID: ${project.id})`)
     return project
   } catch (error) {
-    console.error('Error fetching project ID:', error)
+    Logger.error('Error fetching project ID:', error)
     throw error
   } finally {
     await prisma.$disconnect()

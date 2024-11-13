@@ -5,10 +5,10 @@ import prisma from '@/lib/prisma'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const projectName = searchParams.get('projectName')
+  const projectSlug = searchParams.get('projectSlug')
 
   // Validate project name to prevent querying with invalid names
-  if (!projectName || projectName === 'error' || projectName === 'Error') {
+  if (!projectSlug || projectSlug === 'error' || projectSlug === 'Error') {
     return NextResponse.json(
       { error: 'Invalid project name' },
       { status: 400 }
@@ -21,28 +21,28 @@ export async function GET(request: Request) {
       await prisma.$connect()
       Logger.prisma('Successfully connected to database')
     } catch (connectError) {
-      console.error('Database connection failed:', connectError)
+      Logger.error('Database connection failed:', connectError)
       return NextResponse.json(
         { error: 'Database connection failed' },
         { status: 500 }
       )
     }
 
-    Logger.api('Searching transcripts for project:', projectName)
+    Logger.api('Searching transcripts for project:', projectSlug)
 
     // First, find the project by name
     const project = await prisma.project.findFirst({
       where: {
-        name: projectName,
+        slug: projectSlug,
       },
     })
 
     if (!project) {
-      Logger.prisma('Project not found for name:', projectName)
+      Logger.prisma('Project not found for slug:', projectSlug)
       return NextResponse.json(
         { 
           error: 'Project not found',
-          details: `No project found with name: ${projectName}`
+          details: `No project found with slug: ${projectSlug}`
         }, 
         { status: 404 }
       )

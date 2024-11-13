@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -47,6 +47,7 @@ model Transcript {
   language              String?
   outcome               String?
   topic                 String?
+  topicTranslations     Json?  // NEWLY ADDED
   messageCount          Int       @default(0)
   bookmarked            Boolean   @default(false)
   metadata              Json?

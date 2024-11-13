@@ -32,4 +32,6 @@ export const languageToFlag: Record<string, string> = {
   fil: '🇵🇭', // Filipino
   bn: '🇧🇩', // Bengali
   fa: '🇮🇷', // Persian
+  so: '🇸🇴', // Somali
+  mul: '🌐', // Multiple languages
 }

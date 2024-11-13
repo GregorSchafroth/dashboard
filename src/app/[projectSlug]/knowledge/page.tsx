@@ -1,4 +1,4 @@
-// src/app/[projectName]/knowledge/page.tsx
+// src/app/[projectSlug]/knowledge/page.tsx
 import { Card, CardContent } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { getProjectFromSlug } from '@/lib/utils'

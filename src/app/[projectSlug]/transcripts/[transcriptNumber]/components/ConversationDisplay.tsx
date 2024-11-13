@@ -1,4 +1,4 @@
-// src/app/[projectName]/transcripts/[transcriptNumber]/components/ConversationDisplay.tsx
+// src/app/[projectSlug]/transcripts/[transcriptNumber]/components/ConversationDisplay.tsx
 'use client'
 import { useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'

@@ -1,4 +1,4 @@
-// src/app/[projectName]/analytics/services/analytics.ts
+// src/app/[projectSlug]/analytics/services/analytics.ts
 
 export type DataPoint = {
   date: string

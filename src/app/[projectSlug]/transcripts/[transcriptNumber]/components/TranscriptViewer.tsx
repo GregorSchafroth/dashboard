@@ -3,8 +3,8 @@
 import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import ConversationDisplay from './ConversationDisplay'
-import { unslugify } from '@/lib/utils'
 import { Logger } from '@/utils/debug'
+import { getProjectFromSlug } from '@/lib/utils'
 
 // Types
 type SlateChild = {
@@ -50,34 +50,13 @@ async function getTranscriptData(
   transcriptNumber: number
 ) {
   try {
-    const projectName = unslugify(projectSlug)
-    Logger.prisma(
-      `Looking for project: "${projectName}" (from URL: "${projectName}")`
-    )
-
-    // First find the project
-    const project = await prisma.project.findFirst({
-      where: {
-        name: projectName,
-      },
-    })
+    const project = await getProjectFromSlug(projectSlug)
 
     if (!project) {
-      Logger.prisma(`Project not found: ${projectName}`)
-      // Let's also check if there are any projects for debugging
-      const allProjects = await prisma.project.findMany({
-        select: { name: true },
-      })
-      Logger.prisma(
-        'Available projects:',
-        allProjects.map((p) => p.name)
-      )
       return null
     }
 
-    Logger.prisma(`Found project ID: ${project.id}`)
-
-    // Then find the transcript using project ID and transcript number
+    // Find the transcript using project ID and transcript number
     const transcript = await prisma.transcript.findUnique({
       where: {
         projectId_transcriptNumber: {

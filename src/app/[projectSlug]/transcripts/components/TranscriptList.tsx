@@ -25,17 +25,19 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { CalendarIcon, ChevronDown, ArrowUpDown } from 'lucide-react'
-import { cn, unslugify } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import Link from 'next/link'
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
 import { getLanguageFlag } from '@/lib/languages/utils'
 import { Logger } from '@/utils/debug'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { translations } from '@/i18n/translations'
+import { de } from 'date-fns/locale'
 
 type SortField =
   | 'transcriptNumber'
-  | 'name'
   | 'topic'
   | 'messageCount'
   | 'language'
@@ -61,6 +63,10 @@ type Transcript = {
   bookmarked: boolean
   duration: number | null
   topic: string | null
+  topicTranslations: {
+    en: string
+    de: string
+  } | null
 }
 
 type Props = {
@@ -70,10 +76,11 @@ type Props = {
 }
 
 const TranscriptList = ({ projectSlug }: Props) => {
+  const { language } = useLanguage()
+  const t = translations[language].transcripts.list
+  const calendarLocale = language === 'de' ? de : undefined
   const router = useRouter()
   const segment = useSelectedLayoutSegment()
-
-  // Add sort state
   const [sortField, setSortField] = useState<SortField>('lastResponse')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -96,7 +103,6 @@ const TranscriptList = ({ projectSlug }: Props) => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [columnVisibility, setColumnVisibility] = useState({
     number: true,
-    name: false,
     messages: true,
     language: true,
     duration: false,
@@ -110,11 +116,33 @@ const TranscriptList = ({ projectSlug }: Props) => {
   // Helper function to format duration
   const formatDuration = (seconds: number | null) => {
     if (!seconds) return '-'
+
     const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}m`
     const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
-    return `${hours}h ${remainingMinutes}m`
+    const days = Math.floor(hours / 24)
+    const months = Math.floor(days / 30)
+    const years = Math.floor(months / 12)
+
+    // Create pairs of units and their values
+    const units = [
+      { value: years, label: 'y' },
+      { value: months % 12, label: 'mo' },
+      { value: days % 30, label: 'd' },
+      { value: hours % 24, label: 'h' },
+      { value: minutes % 60, label: 'm' },
+    ]
+
+    // Filter out zero values
+    const significantUnits = units.filter((unit) => unit.value > 0)
+
+    // If no significant units, return 0m
+    if (significantUnits.length === 0) return '0m'
+
+    // Take only the two most significant units
+    return significantUnits
+      .slice(0, 2)
+      .map((unit) => `${unit.value}${unit.label}`)
+      .join(' ')
   }
 
   // Helper function to format datetime
@@ -144,9 +172,6 @@ const TranscriptList = ({ projectSlug }: Props) => {
       switch (sortField) {
         case 'transcriptNumber':
           comparison = a.transcriptNumber - b.transcriptNumber
-          break
-        case 'name':
-          comparison = (a.name || '').localeCompare(b.name || '')
           break
         case 'topic':
           comparison = (a.topic || '').localeCompare(b.topic || '')
@@ -201,13 +226,10 @@ const TranscriptList = ({ projectSlug }: Props) => {
     e.stopPropagation()
 
     try {
-      Logger.components(
-        `Toggling bookmark for transcript #${transcriptNumber}`
-      )
-      const projectName = unslugify(projectSlug)
+      Logger.components(`Toggling bookmark for transcript #${transcriptNumber}`)
 
       Logger.components(`Making API request with:`, {
-        projectName,
+        projectSlug,
         transcriptNumber,
         currentBookmarked,
       })
@@ -220,7 +242,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            projectName,
+            projectSlug,
             bookmarked: !currentBookmarked,
           }),
         }
@@ -253,9 +275,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
       }
 
       try {
-        const projectName = unslugify(projectSlug)
         const response = await fetch(
-          `/api/transcripts?projectName=${encodeURIComponent(projectName)}`
+          `/api/transcripts?projectSlug=${projectSlug}`
         )
 
         if (response.status === 404) {
@@ -277,7 +298,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
         setTranscripts(data)
         setError(null)
       } catch (err) {
-        console.error('Error fetching transcripts:', err)
+        Logger.error('Error fetching transcripts:', err)
         setError(
           err instanceof Error ? err.message : 'Failed to fetch transcripts'
         )
@@ -356,7 +377,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
     )
   }
 
-  if (loading) return <div className='p-4'>Loading...</div>
+  if (loading) return <div className='p-4'>{t.loading}</div>
   if (error) return <div className='p-4'>Error: {error}</div>
 
   return (
@@ -364,7 +385,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
       <div className='flex gap-2 items-center justify-between relative'>
         <div className='relative z-[100] flex-1'>
           <Input
-            placeholder='Search transcripts...'
+            placeholder={t.search}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className='w-full'
@@ -384,14 +405,17 @@ const TranscriptList = ({ projectSlug }: Props) => {
                 {dateRange?.from ? (
                   dateRange.to ? (
                     <>
-                      {format(dateRange.from, 'LLL dd, y')} -{' '}
-                      {format(dateRange.to, 'LLL dd, y')}
+                      {format(dateRange.from, 'PPP', {
+                        locale: calendarLocale,
+                      })}{' '}
+                      -{' '}
+                      {format(dateRange.to, 'PPP', { locale: calendarLocale })}
                     </>
                   ) : (
-                    format(dateRange.from, 'LLL dd, y')
+                    format(dateRange.from, 'PPP', { locale: calendarLocale })
                   )
                 ) : (
-                  <span>Pick a date range</span>
+                  <span>{t.pickDateRange}</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -403,6 +427,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                 selected={dateRange}
                 onSelect={setDateRange}
                 numberOfMonths={2}
+                locale={calendarLocale}
               />
             </PopoverContent>
           </Popover>
@@ -410,7 +435,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant='outline'>
-                Columns <ChevronDown className='ml-2 h-4 w-4' />
+                {t.columns} <ChevronDown className='ml-2 h-4 w-4' />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
@@ -420,15 +445,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   setColumnVisibility((prev) => ({ ...prev, number: checked }))
                 }
               >
-                Transcript #
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.name}
-                onCheckedChange={(checked) =>
-                  setColumnVisibility((prev) => ({ ...prev, name: checked }))
-                }
-              >
-                Name
+                {t.columnNames.number}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.topic}
@@ -436,7 +453,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   setColumnVisibility((prev) => ({ ...prev, topic: checked }))
                 }
               >
-                Topic
+                {t.columnNames.topic}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.messages}
@@ -447,7 +464,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }))
                 }
               >
-                Messages
+                {t.columnNames.messages}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.language}
@@ -458,7 +475,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }))
                 }
               >
-                Language
+                {t.columnNames.language}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.duration}
@@ -469,7 +486,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }))
                 }
               >
-                Duration
+                {t.columnNames.duration}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.firstResponse}
@@ -480,7 +497,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }))
                 }
               >
-                First Response
+                {t.columnNames.firstResponse}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.lastResponse}
@@ -491,7 +508,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }))
                 }
               >
-                Last Response
+                {t.columnNames.lastResponse}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.bookmarked}
@@ -502,7 +519,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }))
                 }
               >
-                Bookmarked
+                {t.columnNames.bookmarked}
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.date}
@@ -510,7 +527,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   setColumnVisibility((prev) => ({ ...prev, date: checked }))
                 }
               >
-                Created At
+                {t.columnNames.createdAt}
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -526,15 +543,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('transcriptNumber')}
                 >
-                  Transcript #{renderSortIndicator('transcriptNumber')}
-                </TableHead>
-              )}
-              {columnVisibility.name && (
-                <TableHead
-                  className='cursor-pointer'
-                  onClick={() => handleSort('name')}
-                >
-                  Name{renderSortIndicator('name')}
+                  {t.columnNames.number}
+                  {renderSortIndicator('transcriptNumber')}
                 </TableHead>
               )}
               {columnVisibility.topic && (
@@ -542,7 +552,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('topic')}
                 >
-                  Topic{renderSortIndicator('topic')}
+                  {t.columnNames.topic}
+                  {renderSortIndicator('topic')}
                 </TableHead>
               )}
               {columnVisibility.messages && (
@@ -550,7 +561,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('messageCount')}
                 >
-                  Messages{renderSortIndicator('messageCount')}
+                  {t.columnNames.messages}
+                  {renderSortIndicator('messageCount')}
                 </TableHead>
               )}
               {columnVisibility.language && (
@@ -558,7 +570,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('language')}
                 >
-                  Language{renderSortIndicator('language')}
+                  {t.columnNames.language}
+                  {renderSortIndicator('language')}
                 </TableHead>
               )}
               {columnVisibility.duration && (
@@ -566,7 +579,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('duration')}
                 >
-                  Duration{renderSortIndicator('duration')}
+                  {t.columnNames.duration}
+                  {renderSortIndicator('duration')}
                 </TableHead>
               )}
               {columnVisibility.firstResponse && (
@@ -574,7 +588,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('firstResponse')}
                 >
-                  First Response{renderSortIndicator('firstResponse')}
+                  {t.columnNames.firstResponse}
+                  {renderSortIndicator('firstResponse')}
                 </TableHead>
               )}
               {columnVisibility.lastResponse && (
@@ -582,7 +597,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('lastResponse')}
                 >
-                  Last Response{renderSortIndicator('lastResponse')}
+                  {t.columnNames.lastResponse}
+                  {renderSortIndicator('lastResponse')}
                 </TableHead>
               )}
               {columnVisibility.bookmarked && (
@@ -590,7 +606,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('bookmarked')}
                 >
-                  Bookmarked{renderSortIndicator('bookmarked')}
+                  {t.columnNames.bookmarked}
+                  {renderSortIndicator('bookmarked')}
                 </TableHead>
               )}
               {columnVisibility.date && (
@@ -598,7 +615,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   className='cursor-pointer'
                   onClick={() => handleSort('createdAt')}
                 >
-                  Created At{renderSortIndicator('createdAt')}
+                  {t.columnNames.createdAt}
+                  {renderSortIndicator('createdAt')}
                 </TableHead>
               )}
             </TableRow>
@@ -627,19 +645,6 @@ const TranscriptList = ({ projectSlug }: Props) => {
                       </Link>
                     </TableCell>
                   )}
-                  {columnVisibility.name && (
-                    <TableCell className='p-0'>
-                      <Link
-                        href={link(transcript.transcriptNumber)}
-                        onClick={(e) =>
-                          handleTranscriptClick(e, transcript.transcriptNumber)
-                        }
-                        className='block w-full h-full p-4'
-                      >
-                        {transcript.name || 'Unnamed'}
-                      </Link>
-                    </TableCell>
-                  )}
                   {columnVisibility.topic && (
                     <TableCell className='p-0'>
                       <Link
@@ -649,7 +654,9 @@ const TranscriptList = ({ projectSlug }: Props) => {
                         }
                         className='block w-full h-full p-4'
                       >
-                        {transcript.topic || '-'}
+                        {transcript.topicTranslations
+                          ? transcript.topicTranslations[language]
+                          : transcript.topic || '-'}
                       </Link>
                     </TableCell>
                   )}
@@ -742,7 +749,6 @@ const TranscriptList = ({ projectSlug }: Props) => {
                       </Link>
                     </TableCell>
                   )}
-
                   {columnVisibility.date && (
                     <TableCell className='p-0'>
                       <Link
@@ -766,7 +772,7 @@ const TranscriptList = ({ projectSlug }: Props) => {
                   }
                   className='h-24 text-center'
                 >
-                  No results found.
+                  {t.noResults}
                 </TableCell>
               </TableRow>
             )}

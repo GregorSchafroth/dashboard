@@ -1,4 +1,4 @@
-// src/app/[projectName]/knowledge/components/EditableKnowledgeBase.tsx
+// src/app/[projectSlug]/knowledge/components/EditableKnowledgeBase.tsx
 'use client'
 
 import React, { useState, ChangeEvent } from 'react'
@@ -7,6 +7,7 @@ import { Textarea, TextareaProps } from '@/components/ui/textarea'
 import { Trash2, Undo2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { syncWithVoiceflow } from '../services/voiceflow'
+import { Logger } from '@/utils/debug'
 
 type FAQ = {
   id?: number
@@ -106,7 +107,7 @@ const EditableKnowledgeBase = ({
 
       if (result.success) {
         // Use the voiceflowApiKey from props
-        console.log('Starting Voiceflow sync...')
+        Logger.progress('Starting Voiceflow sync...')
         const voiceflowResult = await syncWithVoiceflow(
           faqsToSave,
           voiceflowApiKey
@@ -120,7 +121,7 @@ const EditableKnowledgeBase = ({
             duration: 3000,
           })
         } else {
-          console.error('Voiceflow sync error:', voiceflowResult.error)
+          Logger.error('Voiceflow sync error:', voiceflowResult.error)
           toast({
             variant: 'destructive',
             title: 'Warning',
@@ -139,7 +140,7 @@ const EditableKnowledgeBase = ({
         })
       }
     } catch (error) {
-      console.error('Save operation error:', error)
+      Logger.error('Save operation error:', error)
       toast({
         variant: 'destructive',
         title: 'Error',

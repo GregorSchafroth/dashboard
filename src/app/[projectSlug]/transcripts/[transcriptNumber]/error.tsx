@@ -1,4 +1,4 @@
-// app/[projectName]/transcripts/[transcriptNumber]/error.tsx
+// app/[projectSlug]/transcripts/[transcriptNumber]/error.tsx
 'use client'
 
 export default function Error({

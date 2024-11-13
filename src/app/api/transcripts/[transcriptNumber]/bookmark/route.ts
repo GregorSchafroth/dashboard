@@ -2,8 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { Logger } from '@/utils/debug'
+import { getProjectFromSlug } from '@/lib/utils'
 
-interface RouteContext {
+type RouteContext = {
   params: Promise<{
     transcriptNumber: string
   }>
@@ -15,14 +16,13 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     const { transcriptNumber } = await params
     Logger.api(`Processing bookmark update for transcript #${transcriptNumber}`)
 
-    const { projectName, bookmarked } = await request.json()
-    Logger.api(`Request body:`, { projectName, bookmarked })
+    const { projectSlug, bookmarked } = await request.json()
+    Logger.api(`Request body:`, { projectSlug, bookmarked })
 
-    // Convert to number after getting the param
     const transcriptId = parseInt(transcriptNumber)
 
-    if (!projectName || typeof bookmarked !== 'boolean') {
-      Logger.api('Invalid request body:', { projectName, bookmarked })
+    if (!projectSlug || typeof bookmarked !== 'boolean') {
+      Logger.api('Invalid request body:', { projectSlug, bookmarked })
       return NextResponse.json(
         { error: 'Invalid request body' },
         { status: 400 }
@@ -30,15 +30,10 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     }
 
     // First get the project to get its ID
-    Logger.api(`Looking for project: ${projectName}`)
-    const project = await prisma.project.findUnique({
-      where: {
-        name: projectName,
-      },
-    })
+    const project = await getProjectFromSlug(projectSlug)
 
     if (!project) {
-      Logger.api(`Project not found: ${projectName}`)
+      Logger.api(`Project not found: ${projectSlug}`)
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
@@ -59,9 +54,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       },
     })
 
-    Logger.api(
-      `Successfully updated bookmark for transcript #${transcriptId}`
-    )
+    Logger.api(`Successfully updated bookmark for transcript #${transcriptId}`)
     return NextResponse.json({ success: true })
   } catch (error) {
     Logger.error('Error updating bookmark', error)
