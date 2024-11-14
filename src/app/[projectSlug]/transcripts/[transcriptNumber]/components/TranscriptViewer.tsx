@@ -13,9 +13,9 @@ import {
 import prisma from '@/lib/prisma'
 import { getProjectFromSlug } from '@/lib/utils'
 import { Logger } from '@/utils/debug'
-import { notFound } from 'next/navigation'
 import ConversationDisplay from './ConversationDisplay'
 import TranscriptTitle from './TranscriptTitle'
+import { notFound } from 'next/navigation'
 
 // Server-side data fetching function
 async function getTranscriptData(
@@ -26,7 +26,7 @@ async function getTranscriptData(
     const project = await getProjectFromSlug(projectSlug)
 
     if (!project) {
-      return null
+      notFound()
     }
 
     const transcript = await prisma.transcript.findUnique({
@@ -50,20 +50,23 @@ async function getTranscriptData(
       Logger.prisma(
         `Transcript #${transcriptNumber} not found for project ${project.name}`
       )
-      return null
+      notFound()
     }
 
     // Add type assertions for both topicTranslations and turns
     const typedTranscript: TranscriptData = {
       id: transcript.id,
       topic: transcript.topic,
-      topicTranslations: transcript.topicTranslations as TopicTranslations | null,
-      turns: transcript.turns.map(turn => ({
+      topicTranslations:
+        transcript.topicTranslations as TopicTranslations | null,
+      turns: transcript.turns.map((turn) => ({
         type: turn.type as 'text' | 'request',
-        payload: turn.payload as TextPayload['payload'] | RequestPayload['payload'],
+        payload: turn.payload as
+          | TextPayload['payload']
+          | RequestPayload['payload'],
         startTime: turn.startTime,
-        sequence: turn.sequence // Add sequence to the turn data
-      }))
+        sequence: turn.sequence, // Add sequence to the turn data
+      })),
     }
 
     Logger.prisma(`Found transcript with ${transcript.turns.length} turns`)
@@ -126,7 +129,7 @@ const TranscriptViewer = async ({
 
     if (!transcript) {
       Logger.components('Transcript not found, redirecting to 404')
-      notFound()
+      return null
     }
 
     const turns = transcript.turns.map(
@@ -142,7 +145,7 @@ const TranscriptViewer = async ({
       content: extractContent(item),
       isUser: item.type === 'request',
       timestamp: transcript.turns[index].startTime?.toISOString(),
-      sequence: transcript.turns[index].sequence
+      sequence: transcript.turns[index].sequence,
     }))
 
     const displayableTurns = formattedTurns.filter((turn) => turn.content)

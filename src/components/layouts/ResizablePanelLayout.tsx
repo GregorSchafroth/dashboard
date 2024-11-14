@@ -31,7 +31,7 @@ export function ResizablePanelLayout({
         <ResizablePanel defaultSize={rightPanelDefaultSize}>
           <div className='h-full'>
             <ScrollArea className='h-full'>
-              <div className='h-full'>{rightPanel}</div>
+              <div className='h-full flex flex-col'>{rightPanel}</div>
             </ScrollArea>
           </div>
         </ResizablePanel>

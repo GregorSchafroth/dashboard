@@ -31,6 +31,11 @@ export const translations = {
       },
     },
     transcripts: {
+      notFound: {
+        title: 'Transcript Not Found',
+        message: "The transcript you're looking for doesn't exist.",
+        backLink: '← Back to Transcripts',
+      },
       viewer: {
         time: 'Time',
         message: 'Message',
@@ -159,6 +164,11 @@ export const translations = {
       },
     },
     transcripts: {
+      notFound: {
+        title: 'Transkript nicht gefunden',
+        message: 'Das gesuchte Transkript existiert nicht.',
+        backLink: '← Zurück zu Transkripten',
+      },
       viewer: {
         time: 'Zeit',
         message: 'Nachricht',
