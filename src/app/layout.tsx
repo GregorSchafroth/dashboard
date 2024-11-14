@@ -1,12 +1,13 @@
 // src/app/layout.tsx
 
-import { ClerkProvider } from '@clerk/nextjs'
-import { Toaster } from '@/components/ui/toaster'
-import type { Metadata } from 'next'
-
-import './globals.css'
 import Header from '@/components/Header'
+import CustomClerkProvider from '@/components/ui/CustomClerkProvider'
+import { ThemeProvider } from '@/components/ui/theme-provider'
+import { ThemeDebug } from '@/components/ui/ThemeDebug'
+import { Toaster } from '@/components/ui/toaster'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import type { Metadata } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'SAIA Dashboard',
@@ -19,18 +20,27 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
-      <html lang='en'>
-        <body>
-          <LanguageProvider>
-            <main className='h-screen flex flex-col'>
-              <Header />
-              <main className='flex flex-col flex-1'>{children}</main>
-            </main>
-            <Toaster />
-          </LanguageProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang='en' suppressHydrationWarning>
+      <head />
+      <body className='min-h-screen bg-background antialiased'>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='system'
+          enableSystem
+          disableTransitionOnChange
+        >
+          <CustomClerkProvider>
+            <LanguageProvider>
+              <div className='relative flex min-h-screen flex-col'>
+                <Header />
+                <main className='flex-1'>{children}</main>
+                <ThemeDebug />
+              </div>
+              <Toaster />
+            </LanguageProvider>
+          </CustomClerkProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }

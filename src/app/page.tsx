@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { currentUser } from '@clerk/nextjs/server'
 import { slugify } from '@/lib/utils'
 import { Logger } from '@/utils/debug'
-
+import NoProject from './components/NoProject'
 
 async function getProjectForUser(clerkId: string) {
   Logger.auth('Searching for user with clerkId:', clerkId)
@@ -34,9 +34,9 @@ export default async function HomePage() {
   if (!project) {
     Logger.components('No project found for user')
     return (
-      <div className='flex min-h-screen items-center justify-center'>
+      <div className='flex flex-1 items-center justify-center'>
         <h1 className='text-3xl'>
-          No project assigned. Please contact an administrator.
+          <NoProject />
         </h1>
       </div>
     )
@@ -45,7 +45,7 @@ export default async function HomePage() {
   const projectSlug = slugify(project.name)
   Logger.components('Generated project slug:', projectSlug)
   Logger.components('Redirecting to:', `/${projectSlug}`)
-  
+
   // Force the redirect to be more immediate
   return redirect(`/${projectSlug}`)
 }

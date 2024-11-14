@@ -12,7 +12,7 @@ const LanguageSelector = () => {
       <button
         onClick={() => setLanguage('en')}
         className={cn(
-          'px-3 py-1 rounded font-medium transition-colors text-2xl lg:text-3xl',
+          'px-3 py-1 rounded-md font-medium transition-colors text-2xl lg:text-3xl',
           language === 'en'
             ? 'bg-background text-foreground shadow-sm' 
             : 'hover:bg-muted-foreground/10 text-muted-foreground'
@@ -23,7 +23,7 @@ const LanguageSelector = () => {
       <button
         onClick={() => setLanguage('de')}
         className={cn(
-          'px-3 py-1 rounded font-medium transition-colors text-2xl lg:text-3xl',
+          'px-3 py-1 rounded-md font-medium transition-colors text-2xl lg:text-3xl',
           language === 'de'
             ? 'bg-background text-foreground shadow-sm'
             : 'hover:bg-muted-foreground/10 text-muted-foreground '

@@ -1,6 +1,9 @@
 // src/i18n/translations.ts
 export const translations = {
   en: {
+    home: {
+      noProject: 'No project assigned. Please contact an administrator.',
+    },
     knowledge: {
       title: 'Questions and Answers',
       saveWarning:
@@ -98,6 +101,10 @@ export const translations = {
     },
   },
   de: {
+    home: {
+      noProject:
+        'Kein Projekt zugewiesen. Bitte kontaktieren Sie einen Administrator.',
+    },
     knowledge: {
       title: 'Fragen und Antworten',
       saveWarning:

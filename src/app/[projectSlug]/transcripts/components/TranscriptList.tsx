@@ -1,6 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Table,
   TableBody,
@@ -9,32 +22,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { format } from 'date-fns'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { CalendarIcon, ChevronDown, ArrowUpDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { DateRange } from 'react-day-picker'
-import { addDays } from 'date-fns'
-import Link from 'next/link'
-import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
-import { getLanguageFlag } from '@/lib/languages/utils'
-import { Logger } from '@/utils/debug'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { translations } from '@/i18n/translations'
+import { getLanguageFlag } from '@/lib/languages/utils'
+import { cn } from '@/lib/utils'
+import { Logger } from '@/utils/debug'
+import { format } from 'date-fns'
 import { de } from 'date-fns/locale'
+import { ArrowUpDown, CalendarIcon, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter, useSelectedLayoutSegment } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { DateRange } from 'react-day-picker'
 
 type SortField =
   | 'transcriptNumber'
@@ -67,6 +66,11 @@ type Transcript = {
     en: string
     de: string
   } | null
+}
+
+type TopicTranslations = {
+  en: string
+  de: string
 }
 
 type Props = {
@@ -321,15 +325,28 @@ const TranscriptList = ({ projectSlug }: Props) => {
         return String(value).toLowerCase().includes(searchQuery.toLowerCase())
       }
 
-      // Format date for searching
-      const formatDateForSearch = (date: Date) => {
-        return date
-          .toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })
-          .toLowerCase()
+      // Special handling for topics with translations from DB
+      const matchesTopic = () => {
+        // If no search query, return true
+        if (!searchQuery) return true
+
+        // Check translated topic first if translations exist
+        if (transcript.topicTranslations) {
+          const translations = transcript.topicTranslations as TopicTranslations
+          const translatedTopic =
+            translations[language as keyof TopicTranslations]
+          if (
+            translatedTopic &&
+            translatedTopic.toLowerCase().includes(searchQuery.toLowerCase())
+          ) {
+            return true
+          }
+        }
+
+        // Fallback to regular topic field
+        return transcript.topic
+          ? transcript.topic.toLowerCase().includes(searchQuery.toLowerCase())
+          : false
       }
 
       // Special handling for transcript number search with # prefix
@@ -341,27 +358,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
         return matchesSearchQuery(transcript.transcriptNumber)
       }
 
-      // Check all searchable fields
-      const matchesSearch =
-        matchesTranscriptNumber() ||
-        matchesSearchQuery(transcript.voiceflowTranscriptId) ||
-        matchesSearchQuery(transcript.name) ||
-        matchesSearchQuery(
-          formatDateForSearch(new Date(transcript.createdAt))
-        ) ||
-        matchesSearchQuery(
-          new Date(transcript.createdAt).toISOString().split('T')[0]
-        )
-
-      // Date range filtering
-      const transcriptDate = new Date(transcript.createdAt)
-      const matchesDate =
-        !dateRange?.from ||
-        !dateRange?.to ||
-        (transcriptDate >= dateRange.from &&
-          transcriptDate <= addDays(dateRange.to, 1))
-
-      return matchesSearch && matchesDate
+      // Check all searchable fields, prioritizing topic matches
+      return matchesTranscriptNumber() || matchesTopic()
     })
   )
 
@@ -382,8 +380,8 @@ const TranscriptList = ({ projectSlug }: Props) => {
 
   return (
     <div className='px-4 py-2 w-full space-y-2 truncate'>
-      <div className='flex gap-2 items-center justify-between relative'>
-        <div className='relative z-[100] flex-1'>
+      <div className='flex flex-wrap gap-2 items-start justify-between relative'>
+        <div className='relative z-[100] flex-1 min-w-[200px]'>
           <Input
             placeholder={t.search}
             value={searchQuery}
@@ -626,9 +624,9 @@ const TranscriptList = ({ projectSlug }: Props) => {
               filteredAndSortedData.map((transcript) => (
                 <TableRow
                   key={transcript.transcriptNumber}
-                  className={`cursor-pointer hover:bg-gray-50 ${
+                  className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
                     segment === transcript.transcriptNumber.toString()
-                      ? 'bg-gray-100'
+                      ? 'bg-gray-100 dark:bg-gray-800'
                       : ''
                   }`}
                 >

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import LanguageSelector from './header/LanguageSelector'
 import Navbar from './header/Navbar'
 import SignedOutButtons from './header/SignedOutButtons'
+import { ThemeToggle } from './header/ThemeToggle'
 
 const Header = () => {
   return (
@@ -32,9 +33,10 @@ const Header = () => {
             <Navbar />
           </SignedIn>
         </div>
-        <SignedIn>
-          <div className='flex items-center gap-4 shrink-0'>
-            <LanguageSelector />
+        <div className='flex items-center gap-4 shrink-0'>
+          <ThemeToggle />
+          <LanguageSelector />
+          <SignedIn>
             <UserButton
               appearance={{
                 elements: {
@@ -42,8 +44,8 @@ const Header = () => {
                 },
               }}
             />
-          </div>
-        </SignedIn>
+          </SignedIn>
+        </div>
         <SignedOut>
           <SignedOutButtons />
         </SignedOut>

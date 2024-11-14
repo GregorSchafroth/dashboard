@@ -33,8 +33,8 @@ const ConversationDisplay = ({ turns }: ConversationDisplayProps) => {
               <div
                 className={`max-w-lg px-4 py-2 rounded-lg text-sm ${
                   item.isUser
-                    ? 'bg-blue-500 text-white ml-8'
-                    : 'bg-gray-100 text-gray-800 mr-8'
+                    ? 'bg-blue-500 dark:bg-blue-600 text-white ml-8'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 mr-8'
                 }`}
               >
                 <ReactMarkdown rehypePlugins={[rehypeRaw]}>

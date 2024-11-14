@@ -11,14 +11,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  role      Role     @default(MEMBER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  clerkId   String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  role      Role      @default(MEMBER)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime  @updatedAt
+  clerkId   String    @unique
   projectId Int?
-  project   Project? @relation(fields: [projectId], references: [id])
+  project   Project?  @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
 }
@@ -47,7 +47,7 @@ model Transcript {
   language              String?
   outcome               String?
   topic                 String?
-  topicTranslations     Json?  // NEWLY ADDED
+  topicTranslations     Json? // NEWLY ADDED
   messageCount          Int       @default(0)
   bookmarked            Boolean   @default(false)
   metadata              Json?
