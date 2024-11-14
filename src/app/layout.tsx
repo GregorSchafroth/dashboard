@@ -3,7 +3,6 @@
 import Header from '@/components/Header'
 import CustomClerkProvider from '@/components/ui/CustomClerkProvider'
 import { ThemeProvider } from '@/components/ui/theme-provider'
-import { ThemeDebug } from '@/components/ui/ThemeDebug'
 import { Toaster } from '@/components/ui/toaster'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import type { Metadata } from 'next'
@@ -34,7 +33,6 @@ export default function RootLayout({
               <div className='relative flex min-h-screen flex-col'>
                 <Header />
                 <main className='flex-1'>{children}</main>
-                <ThemeDebug />
               </div>
               <Toaster />
             </LanguageProvider>
