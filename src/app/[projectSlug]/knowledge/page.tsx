@@ -1,10 +1,9 @@
 // src/app/[projectSlug]/knowledge/page.tsx
-import { Card, CardContent } from '@/components/ui/card'
 import { prisma } from '@/lib/prisma'
 import { getProjectFromSlug } from '@/lib/utils'
-import { notFound } from 'next/navigation'
-import EditableKnowledgeBase from './components/EditableKnowledgeBase'
 import { Logger } from '@/utils/debug'
+import { notFound } from 'next/navigation'
+import ClientKnowledgePage from './components/ClientKnowledgePage'
 
 type Props = {
   params: Promise<{
@@ -33,7 +32,6 @@ export default async function KnowledgePage({ params }: Props) {
   const faqs: FAQ[] = []
 
   try {
-    // Attempt to fetch the knowledge base and its entries
     const knowledgeBase = await prisma.knowledgeBase.findFirst({
       where: {
         projectId: project.id,
@@ -44,7 +42,6 @@ export default async function KnowledgePage({ params }: Props) {
       },
     })
 
-    // If knowledge base exists, map its entries to FAQs
     if (knowledgeBase?.entries) {
       knowledgeBase.entries.forEach((entry) => {
         faqs.push({
@@ -56,7 +53,6 @@ export default async function KnowledgePage({ params }: Props) {
     }
   } catch (error) {
     console.error('Error fetching knowledge base:', error)
-    // Continue with empty faqs array
   }
 
   async function handleSave(updatedFaqs: FAQ[]) {
@@ -99,25 +95,10 @@ export default async function KnowledgePage({ params }: Props) {
   }
 
   return (
-    <div className='flex flex-col'>
-      <h2 className='text-2xl m-4'>Questions and Answers</h2>
-      <Card className='flex-grow mx-4 p-4'>
-        <CardContent className='p-0'>
-          <div>
-            🇬🇧 Please ensure to save your changes by clicking the &quot;Save
-            Questions&quot; button below. <br />
-            🇩🇪 Bitte stellen Sie sicher, dass Sie Ihre Änderungen speichern,
-            indem Sie unten auf den Knopf &quot;Save Questions&quot; klicken.
-          </div>
-        </CardContent>
-      </Card>
-      <div className='flex-grow overflow-hidden p-4'>
-        <EditableKnowledgeBase
-          initialFaqs={faqs}
-          onSave={handleSave}
-          voiceflowApiKey={voiceflowApiKey}
-        />
-      </div>
-    </div>
+    <ClientKnowledgePage 
+      faqs={faqs}
+      onSave={handleSave}
+      voiceflowApiKey={voiceflowApiKey}
+    />
   )
 }

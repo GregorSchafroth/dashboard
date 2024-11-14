@@ -8,8 +8,33 @@ export const translations = {
       title: 'Questions and Answers',
       saveWarning:
         'Please ensure to save your changes by clicking the "Save Questions" button below.',
+      addQuestion: 'Add Question',
+      saveChanges: 'Save Changes',
+      saving: 'Saving...',
+      placeholders: {
+        question: 'Question',
+        answer: 'Answer',
+      },
+      toast: {
+        success: {
+          title: 'Success',
+          description: 'Changes saved and synced with Voiceflow',
+        },
+        warning: {
+          title: 'Warning',
+          description: 'Saved to database but failed to sync with Voiceflow',
+        },
+        error: {
+          title: 'Error',
+          description: 'Failed to save changes',
+        },
+      },
     },
     transcripts: {
+      viewer: {
+        time: 'Time',
+        message: 'Message',
+      },
       selectTranscript: 'Select a transcript to view',
       list: {
         search: 'Search transcripts...',
@@ -109,8 +134,35 @@ export const translations = {
       title: 'Fragen und Antworten',
       saveWarning:
         'Bitte stellen Sie sicher, dass Sie Ihre Änderungen speichern, indem Sie unten auf den Knopf "Save Questions" klicken.',
+      addQuestion: 'Frage hinzufügen',
+      saveChanges: 'Änderungen speichern',
+      saving: 'Wird gespeichert...',
+      placeholders: {
+        question: 'Frage',
+        answer: 'Antwort',
+      },
+      toast: {
+        success: {
+          title: 'Erfolg',
+          description:
+            'Änderungen gespeichert und mit Voiceflow synchronisiert',
+        },
+        warning: {
+          title: 'Warnung',
+          description:
+            'In Datenbank gespeichert, aber Synchronisierung mit Voiceflow fehlgeschlagen',
+        },
+        error: {
+          title: 'Fehler',
+          description: 'Fehler beim Speichern der Änderungen',
+        },
+      },
     },
     transcripts: {
+      viewer: {
+        time: 'Zeit',
+        message: 'Nachricht',
+      },
       selectTranscript: 'Wählen Sie ein Transkript zum Anzeigen',
       list: {
         search: 'Transkripte durchsuchen...',

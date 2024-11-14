@@ -1,3 +1,5 @@
+import { Logger } from "@/utils/debug"
+
 type FAQ = {
   id?: number
   question: string
@@ -73,7 +75,7 @@ export class VoiceflowService {
       return faqDocument ? faqDocument.documentID : null
     } catch (error) {
       // Log the error but don't throw it - return null instead
-      console.error('Error getting FAQ document ID:', error)
+      Logger.error('Error getting FAQ document ID:', error)
       return null
     }
   }
@@ -96,7 +98,7 @@ export class VoiceflowService {
 
       return true
     } catch (error) {
-      console.error('Error deleting document:', error)
+      Logger.error('Error deleting document:', error)
       throw error
     }
   }
@@ -113,7 +115,7 @@ export class VoiceflowService {
         try {
           await this.deleteExistingFAQ(existingDocId)
         } catch (error) {
-          console.error('Error deleting existing FAQ:', error)
+          Logger.error('Error deleting existing FAQ:', error)
           // Continue with upload even if delete fails
         }
       }
@@ -153,7 +155,7 @@ export class VoiceflowService {
 
       return { success: true }
     } catch (error) {
-      console.error('Error updating Voiceflow knowledge base:', error)
+      Logger.error('Error updating Voiceflow knowledge base:', error)
       return {
         success: false,
         error:

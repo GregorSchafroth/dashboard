@@ -3,6 +3,7 @@
 import { Prisma } from '@prisma/client'
 import dotenv from 'dotenv'
 import prisma from '@/lib/prisma'
+import { Logger } from '@/utils/debug'
 
 dotenv.config()
 
@@ -82,7 +83,7 @@ type ProjectWithAuth = {
 
 async function fetchAllHistoricalTranscripts(projectId: number) {
   try {
-    console.log('Starting historical transcript fetch...')
+    Logger.progress('Starting historical transcript fetch...')
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -99,7 +100,7 @@ async function fetchAllHistoricalTranscripts(projectId: number) {
       return
     }
 
-    console.log(`Processing project: ${project.name}`)
+    Logger.progress(`Processing project: ${project.name}`)
 
     const url = `https://api.voiceflow.com/v2/transcripts/${project.voiceflowProjectId}`
 
@@ -120,7 +121,7 @@ async function fetchAllHistoricalTranscripts(projectId: number) {
     }
 
     const transcripts = (await response.json()) as VoiceflowTranscript[]
-    console.log(
+    Logger.progress(
       `Found ${transcripts.length} transcripts for project ${project.name}`
     )
 
@@ -136,11 +137,11 @@ async function fetchAllHistoricalTranscripts(projectId: number) {
           try {
             await processTranscript(project, transcript)
             processedCount++
-            console.log(
+            Logger.progress(
               `Processed ${processedCount}/${transcripts.length} transcripts for ${project.name}`
             )
           } catch (error) {
-            console.error(
+            Logger.error(
               `Error processing transcript ${transcript._id}:`,
               error
             )
@@ -153,9 +154,9 @@ async function fetchAllHistoricalTranscripts(projectId: number) {
       }
     }
 
-    console.log('\nHistorical transcript fetch completed!')
+    Logger.progress('\nHistorical transcript fetch completed!')
   } catch (error) {
-    console.error('Error in historical transcript fetch:', error)
+    Logger.error('Error in historical transcript fetch:', error)
   } finally {
     await prisma.$disconnect()
   }
@@ -299,5 +300,5 @@ function calculateTranscriptMetrics(turns: VoiceflowTurn[]): TranscriptMetrics {
 
 // Execute the script
 fetchAllHistoricalTranscripts(projectId)
-  .then(() => console.log('Script completed successfully'))
-  .catch((error) => console.error('Script failed:', error))
+  .then(() => Logger.progress('Script completed successfully'))
+  .catch((error) => Logger.error('Script failed:', error))

@@ -92,6 +92,7 @@ model Turn {
   type            String
   payload         Json
   startTime       DateTime
+  sequence        Int? // THIS IS NEW
   format          String
   voiceflowTurnId String
   transcript      Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)

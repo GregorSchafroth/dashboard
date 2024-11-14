@@ -1,4 +1,3 @@
-// src/app/[projectSlug]/knowledge/components/EditableKnowledgeBase.tsx
 'use client'
 
 import React, { useState, ChangeEvent } from 'react'
@@ -8,6 +7,7 @@ import { Trash2, Undo2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { syncWithVoiceflow } from '../services/voiceflow'
 import { Logger } from '@/utils/debug'
+import { useTranslation } from '@/hooks/useTranslation'
 
 type FAQ = {
   id?: number
@@ -44,7 +44,6 @@ const AutoResizeTextarea = React.forwardRef<
   return (
     <Textarea
       ref={(element) => {
-        // Handle both the forwarded ref and our local ref
         textareaRef.current = element
         if (typeof forwardedRef === 'function') {
           forwardedRef(element)
@@ -73,6 +72,7 @@ const EditableKnowledgeBase = ({
   )
   const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const addFaq = () => {
     setFaqs([...faqs, { question: '', answer: '', markedForDeletion: false }])
@@ -102,11 +102,9 @@ const EditableKnowledgeBase = ({
     try {
       const faqsToSave = faqs.filter((faq) => !faq.markedForDeletion)
 
-      // First save to your database
       const result = await onSave(faqsToSave)
 
       if (result.success) {
-        // Use the voiceflowApiKey from props
         Logger.progress('Starting Voiceflow sync...')
         const voiceflowResult = await syncWithVoiceflow(
           faqsToSave,
@@ -116,37 +114,40 @@ const EditableKnowledgeBase = ({
         if (voiceflowResult.success) {
           setFaqs(faqsToSave)
           toast({
-            title: 'Success',
-            description: 'Changes saved and synced with Voiceflow',
+            title: t('knowledge.toast.success.title'),
+            description: t('knowledge.toast.success.description'),
             duration: 3000,
           })
         } else {
           Logger.error('Voiceflow sync error:', voiceflowResult.error)
           toast({
             variant: 'destructive',
-            title: 'Warning',
+            title: t('knowledge.toast.warning.title'),
             description:
-              'Saved to database but failed to sync with Voiceflow: ' +
+              t('knowledge.toast.warning.description') +
+              ': ' +
               voiceflowResult.error,
-            duration: 5000,
+            duration: 60000,
           })
         }
       } else {
         toast({
           variant: 'destructive',
-          title: 'Error',
-          description: result.error || 'Failed to save changes',
-          duration: 5000,
+          title: t('knowledge.toast.error.title'),
+          description: result.error || t('knowledge.toast.error.description'),
+          duration: 60000,
         })
       }
     } catch (error) {
       Logger.error('Save operation error:', error)
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: t('knowledge.toast.error.title'),
         description:
-          error instanceof Error ? error.message : 'Failed to save changes',
-        duration: 5000,
+          error instanceof Error
+            ? error.message
+            : t('knowledge.toast.error.description'),
+        duration: 60000,
       })
     } finally {
       setIsSaving(false)
@@ -165,14 +166,14 @@ const EditableKnowledgeBase = ({
           <div className='flex items-start justify-between'>
             <div className='flex gap-2 flex-1'>
               <AutoResizeTextarea
-                placeholder='Question'
+                placeholder={t('knowledge.placeholders.question')}
                 value={faq.question}
                 onChange={(e) => updateFaq(index, 'question', e.target.value)}
                 className='w-full min-h-[38px] resize-none'
                 disabled={faq.markedForDeletion}
               />
               <AutoResizeTextarea
-                placeholder='Answer'
+                placeholder={t('knowledge.placeholders.answer')}
                 value={faq.answer}
                 onChange={(e) => updateFaq(index, 'answer', e.target.value)}
                 className='w-full min-h-[38px] resize-none'
@@ -195,9 +196,9 @@ const EditableKnowledgeBase = ({
         </div>
       ))}
       <div className='flex justify-between'>
-        <Button onClick={addFaq}>Add Question</Button>
+        <Button onClick={addFaq}>{t('knowledge.addQuestion')}</Button>
         <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {isSaving ? t('knowledge.saving') : t('knowledge.saveChanges')}
         </Button>
       </div>
     </div>
