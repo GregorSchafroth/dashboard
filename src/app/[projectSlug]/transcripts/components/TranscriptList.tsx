@@ -318,6 +318,33 @@ const TranscriptList = ({ projectSlug }: Props) => {
   // Filter and sort data
   const filteredAndSortedData = sortTranscripts(
     transcripts.filter((transcript) => {
+      // Date range filtering
+      if (dateRange?.from || dateRange?.to) {
+        const transcriptDate = new Date(transcript.createdAt)
+        
+        if (dateRange.from && dateRange.to) {
+          // Adjust the to date to include the entire day
+          const toDate = new Date(dateRange.to)
+          toDate.setHours(23, 59, 59, 999)
+          
+          if (transcriptDate < dateRange.from || transcriptDate > toDate) {
+            return false
+          }
+        } else if (dateRange.from) {
+          if (transcriptDate < dateRange.from) {
+            return false
+          }
+        } else if (dateRange.to) {
+          // Adjust the to date to include the entire day
+          const toDate = new Date(dateRange.to)
+          toDate.setHours(23, 59, 59, 999)
+          
+          if (transcriptDate > toDate) {
+            return false
+          }
+        }
+      }
+
       // Search matching function for text fields
       const matchesSearchQuery = (
         value: string | number | null | undefined
