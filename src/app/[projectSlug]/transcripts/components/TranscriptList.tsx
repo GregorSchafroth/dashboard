@@ -560,6 +560,20 @@ const TranscriptList = ({ projectSlug }: Props) => {
         </div>
       </div>
 
+      <div className='text-sm text-muted-foreground'>
+        {filteredAndSortedData.length === transcripts.length ? (
+          <span>
+            {t.showingAllResults.replace('{count}', transcripts.length.toString())}
+          </span>
+        ) : (
+          <span>
+            {t.showingFilteredResults
+              .replace('{filtered}', filteredAndSortedData.length.toString())
+              .replace('{total}', transcripts.length.toString())}
+          </span>
+        )}
+      </div>
+
       <div className='rounded-md border'>
         <Table>
           <TableHeader>

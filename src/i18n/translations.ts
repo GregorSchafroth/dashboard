@@ -47,6 +47,8 @@ export const translations = {
         columns: 'Columns',
         noResults: 'No results found.',
         loading: 'Loading...',
+        showingAllResults: 'Showing all {count} transcripts',
+        showingFilteredResults: 'Showing {filtered} of {total} transcripts',
         columnNames: {
           number: 'Transcript #',
           topic: 'Topic',
@@ -180,6 +182,8 @@ export const translations = {
         columns: 'Spalten',
         noResults: 'Keine Ergebnisse gefunden.',
         loading: 'Wird geladen...',
+        showingAllResults: 'Zeige alle {count} Transkripte',
+        showingFilteredResults: 'Zeige {filtered} von {total} Transkripten',
         columnNames: {
           number: 'Transkript #',
           topic: 'Thema',
