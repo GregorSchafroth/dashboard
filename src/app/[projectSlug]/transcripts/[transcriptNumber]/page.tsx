@@ -20,7 +20,7 @@ const TranscriptPage = async ({ params }: PageProps) => {
 
   try {
     return (
-      <div className='px-4 py-2 flex flex-col h-full'>
+      <div className='h-full flex flex-col px-4 py-2'>
         <Suspense fallback={<TranscriptLoading />}>
           <TranscriptViewer
             projectSlug={projectSlug}

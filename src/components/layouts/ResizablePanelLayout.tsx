@@ -28,12 +28,15 @@ export function ResizablePanelLayout({
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={rightPanelDefaultSize}>
-          <div className='h-full'>
-            <ScrollArea className='h-full'>
-              <div className='h-full flex flex-col'>{rightPanel}</div>
-            </ScrollArea>
-          </div>
+        <ResizablePanel
+          defaultSize={rightPanelDefaultSize}
+          className='h-full'
+        >
+          <ScrollArea className='h-full w-full'>
+            <div className='h-full flex flex-col'>
+              <div className='flex-1 flex flex-col'>{rightPanel}</div>
+            </div>
+          </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
